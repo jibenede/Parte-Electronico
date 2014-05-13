@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Electronic Ticket</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="pin">PIN</string>
+    <string name="login">Login</string>
+    <string name="add_new_ticket">Add New Ticket</string>
+    <string name="add_traffic_violation">Add Traffic Violation</string>
+    <string name="select_traffic_violation">---Select Traffic Violation---</string>
+</resources>
