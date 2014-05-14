@@ -22,26 +22,45 @@ import java.util.List;
 public class TicketDetailsFragment extends Fragment {
     private String[] mTrafficViolationList;
 
+    /**
+     * A list of the traffic violations defined by this ticket.
+     */
     private List<TrafficViolation> mViolations;
 
+    /**
+     * Flag that signals if the data contained within this form is editable or read only. Should be set to true when
+     * creating new tickets and to false when reviewing them.
+     */
+    private boolean mEditable;
+
     public TicketDetailsFragment() {
-        mViolations = new ArrayList<TrafficViolation>();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_ticket_details, container, false);
 
+        mEditable = getArguments().getBoolean("editable", false);
 
-        View trafficViolationItem = view.findViewById(R.id.item_traffic_violation);
-        configureTrafficViolationItem(trafficViolationItem, 0);
-        mViolations.add(new TrafficViolation());
+
+        if (mViolations == null) {
+            mViolations = new ArrayList<TrafficViolation>();
+
+            mViolations.add(new TrafficViolation());
+            addTrafficViolationView(view, inflater, 0);
+        } else {
+            for (int i = 0; i < mViolations.size(); i++) {
+                addTrafficViolationView(view, inflater, i);
+            }
+        }
+
 
         Button addViolationButton = (Button)view.findViewById(R.id.button_add_traffic_violation);
         addViolationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addTrafficViolation();
+                mViolations.add(new TrafficViolation());
+                addTrafficViolationView(getView(), getActivity().getLayoutInflater(), mViolations.size() - 1);
             }
         });
 
@@ -54,8 +73,16 @@ public class TicketDetailsFragment extends Fragment {
         mTrafficViolationList = getActivity().getResources().getStringArray(R.array.traffic_violations);
     }
 
+
     private void configureTrafficViolationItem(final View view, final int index) {
+        TrafficViolation violation = mViolations.get(index);
+
         Button button = (Button) view.findViewById(R.id.button_select_traffic_violation);
+        TextView costLabel = (TextView) view.findViewById(R.id.label_price);
+        if (violation.getType() != null) {
+            button.setText(violation.getType());
+            costLabel.setText("" + violation.getValue());
+        }
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -63,6 +90,8 @@ public class TicketDetailsFragment extends Fragment {
                 dialog.show();
             }
         });
+
+
     }
 
     private AlertDialog getTrafficViolationSelectionDialog(final View view, final int index) {
@@ -87,13 +116,11 @@ public class TicketDetailsFragment extends Fragment {
         label.setText("" + cost);
     }
 
-    private void addTrafficViolation() {
-        LayoutInflater inflater = getActivity().getLayoutInflater();
+    private void addTrafficViolationView(View rootView, LayoutInflater inflater, int index) {
         View trafficViolationItem = inflater.inflate(R.layout.item_traffic_violation, null);
-        configureTrafficViolationItem(trafficViolationItem, mViolations.size());
-        mViolations.add(new TrafficViolation());
+        configureTrafficViolationItem(trafficViolationItem, index);
 
-        LinearLayout layout = (LinearLayout)getView().findViewById(R.id.traffic_violation_container);
+        LinearLayout layout = (LinearLayout)rootView.findViewById(R.id.traffic_violation_container);
         layout.addView(trafficViolationItem);
 
 

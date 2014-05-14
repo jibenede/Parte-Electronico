@@ -33,7 +33,12 @@ public class TicketActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ticket_details);
 
+        boolean editable = getIntent().getBooleanExtra("editable", false);
+        Bundle arguments = new Bundle();
+        arguments.putBoolean("editable", editable);
+
         mDetailsFragment = new TicketDetailsFragment();
+        mDetailsFragment.setArguments(arguments);
         mPicturesFragment = new TicketPicturesFragment();
 
         mFocusedFragment = FocusedFragment.DETAILS;

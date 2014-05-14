@@ -34,7 +34,9 @@ public class NavigationActivity extends Activity {
     @Override
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
         if (featureId == 0) {
-            startActivity(TicketActivity.getIntent(this));
+            Intent intent = TicketActivity.getIntent(this);
+            intent.putExtra("editable", true);
+            startActivity(intent);
             return true;
         }
         return super.onMenuItemSelected(featureId, item);

@@ -12,8 +12,16 @@ public class TrafficViolation {
 
     }
 
+    public String getType() {
+        return mType;
+    }
+
     public void setType(String type) {
         mType = type;
+    }
+
+    public int getValue() {
+        return mValue;
     }
 
     public void setValue(int value) {

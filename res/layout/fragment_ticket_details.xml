@@ -10,7 +10,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content">
 
-        <include layout="@layout/item_traffic_violation" />
+
     </LinearLayout>
 
     <Button
