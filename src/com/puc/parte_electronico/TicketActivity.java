@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import com.puc.ParteElectronico.R;
 import com.puc.parte_electronico.fragments.TicketDetailsFragment;
 import com.puc.parte_electronico.fragments.TicketPicturesFragment;
 

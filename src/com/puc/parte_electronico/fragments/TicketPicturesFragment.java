@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import com.puc.ParteElectronico.R;
+import com.puc.parte_electronico.R;
 
 /**
  * Created by jose on 5/13/14.

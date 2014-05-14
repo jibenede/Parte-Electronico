@@ -10,10 +10,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import com.puc.ParteElectronico.R;
+import com.puc.parte_electronico.R;
+import com.puc.parte_electronico.globals.Settings;
+import com.puc.parte_electronico.model.TrafficTicket;
 import com.puc.parte_electronico.model.TrafficViolation;
+import com.puc.parte_electronico.model.User;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -42,7 +46,6 @@ public class TicketDetailsFragment extends Fragment {
 
         mEditable = getArguments().getBoolean("editable", false);
 
-
         if (mViolations == null) {
             mViolations = new ArrayList<TrafficViolation>();
 
@@ -54,13 +57,20 @@ public class TicketDetailsFragment extends Fragment {
             }
         }
 
-
-        Button addViolationButton = (Button)view.findViewById(R.id.button_add_traffic_violation);
+        Button addViolationButton = (Button) view.findViewById(R.id.button_add_traffic_violation);
         addViolationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mViolations.add(new TrafficViolation());
                 addTrafficViolationView(getView(), getActivity().getLayoutInflater(), mViolations.size() - 1);
+            }
+        });
+
+        Button saveButton = (Button) view.findViewById(R.id.button_save);
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveTicket();
             }
         });
 
@@ -71,6 +81,14 @@ public class TicketDetailsFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mTrafficViolationList = getActivity().getResources().getStringArray(R.array.traffic_violations);
+    }
+
+    private void saveTicket() {
+        User currentUser = Settings.getSettings().getCurrentUser();
+
+        TrafficTicket ticket = new TrafficTicket(currentUser, null, new Date().getTime(), null, null);
+        ticket.insert();
+        getActivity().finish();
     }
 
 

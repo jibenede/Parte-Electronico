@@ -9,7 +9,6 @@ public class TrafficViolation {
 
 
     public TrafficViolation() {
-
     }
 
     public String getType() {
