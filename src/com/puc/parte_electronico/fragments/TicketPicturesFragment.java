@@ -11,6 +11,9 @@ import com.puc.parte_electronico.R;
  * Created by jose on 5/13/14.
  */
 public class TicketPicturesFragment extends Fragment {
+    public static final String TAG = "TICKET_PICTURES_FRAGMENT";
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_ticket_pictures, container, false);

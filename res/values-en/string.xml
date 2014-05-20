@@ -10,4 +10,15 @@
     <string name="select_traffic_violation">---Select Traffic Violation---</string>
     <string name="traffic_ticket_description">Ticket %1$d: %2$tB %2$td, %2$tH:%2$tM:%2$tS</string>
     <string name="save">Save</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="rut">RUT</string>
+    <string name="no_id">No ID</string>
+    <string name="address">Address</string>
+    <string name="vehicle">Vehicle</string>
+    <string name="license_plate">License Plate</string>
+    <string name="ticket_option_details">Details</string>
+    <string name="ticket_option_violations">Violations</string>
+    <string name="ticket_option_pictures">Pictures</string>
+    <string name="ticket_option_save">Save</string>
 </resources>

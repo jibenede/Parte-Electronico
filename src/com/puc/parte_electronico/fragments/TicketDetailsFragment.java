@@ -1,146 +1,137 @@
 package com.puc.parte_electronico.fragments;
 
-import android.app.AlertDialog;
 import android.app.Fragment;
-import android.content.DialogInterface;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.LinearLayout;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.TextView;
 import com.puc.parte_electronico.R;
 import com.puc.parte_electronico.globals.Settings;
 import com.puc.parte_electronico.model.TrafficTicket;
-import com.puc.parte_electronico.model.TrafficViolation;
-import com.puc.parte_electronico.model.User;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * Created by jose on 5/13/14.
+ * Created by jose on 5/19/14.
  */
 public class TicketDetailsFragment extends Fragment {
-    private String[] mTrafficViolationList;
+    public static final String TAG = "TICKET_DETAILS_FRAGMENT";
+    private static final String TICKET_KEY = "TICKET_KEY";
+    private final int[] RUT_MULTIPLIER = new int[] { 2, 3, 4, 5, 6, 7 };
 
-    /**
-     * A list of the traffic violations defined by this ticket.
-     */
-    private List<TrafficViolation> mViolations;
+    private TrafficTicket mTicket;
 
-    /**
-     * Flag that signals if the data contained within this form is editable or read only. Should be set to true when
-     * creating new tickets and to false when reviewing them.
-     */
-    private boolean mEditable;
+    private EditText mEditRut;
+    private EditText mEditVerifierDigit;
+    private EditText mEditFirstName;
+    private EditText mEditLastName;
+    private EditText mEditAddress;
+    private EditText mEditVehicle;
+    private EditText mEditLicensePlate;
 
-    public TicketDetailsFragment() {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            mTicket = arguments.getParcelable(TICKET_KEY);
+        }
+
+        if (mTicket == null) {
+            mTicket = new TrafficTicket(Settings.getSettings().getCurrentUser());
+        }
     }
 
+    @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_ticket_details, container, false);
 
-        mEditable = getArguments().getBoolean("editable", false);
-
-        if (mViolations == null) {
-            mViolations = new ArrayList<TrafficViolation>();
-
-            mViolations.add(new TrafficViolation());
-            addTrafficViolationView(view, inflater, 0);
-        } else {
-            for (int i = 0; i < mViolations.size(); i++) {
-                addTrafficViolationView(view, inflater, i);
-            }
-        }
-
-        Button addViolationButton = (Button) view.findViewById(R.id.button_add_traffic_violation);
-        addViolationButton.setOnClickListener(new View.OnClickListener() {
+        mEditRut = (EditText)view.findViewById(R.id.edit_rut);
+        mEditRut.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
-            public void onClick(View v) {
-                mViolations.add(new TrafficViolation());
-                addTrafficViolationView(getView(), getActivity().getLayoutInflater(), mViolations.size() - 1);
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                    parseRut(v);
+                    return true;
+                }
+                return false;
+            }
+        });
+        mEditRut.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    parseRut((TextView)v);
+                }
             }
         });
 
-        Button saveButton = (Button) view.findViewById(R.id.button_save);
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveTicket();
-            }
-        });
+        mEditVerifierDigit = (EditText)view.findViewById(R.id.edit_verifier);
+        mEditFirstName = (EditText)view.findViewById(R.id.edit_first_name);
+        mEditLastName = (EditText)view.findViewById(R.id.edit_last_name);
+        mEditAddress = (EditText)view.findViewById(R.id.edit_address);
+        mEditVehicle = (EditText)view.findViewById(R.id.edit_vehicle);
+        mEditLicensePlate = (EditText)view.findViewById(R.id.edit_license_plate);
+
+        initializeData();
 
         return view;
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        mTrafficViolationList = getActivity().getResources().getStringArray(R.array.traffic_violations);
+    public void onPause() {
+        super.onPause();
+
+        IFragmentCallbacks callback = (IFragmentCallbacks)getActivity();
+        callback.saveState(TAG, getState());
     }
 
-    private void saveTicket() {
-        User currentUser = Settings.getSettings().getCurrentUser();
-
-        TrafficTicket ticket = new TrafficTicket(currentUser, null, new Date().getTime(), null, null);
-        ticket.insert();
-        getActivity().finish();
-    }
-
-
-    private void configureTrafficViolationItem(final View view, final int index) {
-        TrafficViolation violation = mViolations.get(index);
-
-        Button button = (Button) view.findViewById(R.id.button_select_traffic_violation);
-        TextView costLabel = (TextView) view.findViewById(R.id.label_price);
-        if (violation.getType() != null) {
-            button.setText(violation.getType());
-            costLabel.setText("" + violation.getValue());
+    private void initializeData() {
+        Integer rut = mTicket.getRut();
+        if (rut != null) {
+            mEditRut.setText("" + mTicket.getRut());
+            checkRut(mTicket.getRut());
         }
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AlertDialog dialog = getTrafficViolationSelectionDialog(view, index);
-                dialog.show();
-            }
-        });
-
-
     }
 
-    private AlertDialog getTrafficViolationSelectionDialog(final View view, final int index) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("placeholder")
-                .setItems(mTrafficViolationList, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        setViolationValues(mViolations.get(index), mTrafficViolationList[which], 100000, view);
-                    }
-                });
-        return builder.create();
+    private Bundle getState() {
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(TICKET_KEY, mTicket);
+        return bundle;
     }
 
-    private void setViolationValues(TrafficViolation violation, String type, int cost, View container) {
-        violation.setType(type);
-        violation.setValue(cost);
+    private void parseRut(TextView v) {
+        String rut = v.getText().toString();
+        if (rut.length() == 0) {
+            return;
+        }
 
-        Button button = (Button)container.findViewById(R.id.button_select_traffic_violation);
-        button.setText(type);
-
-        TextView label = (TextView)container.findViewById(R.id.label_price);
-        label.setText("" + cost);
+        int value = Integer.parseInt(rut);
+        checkRut(value);
+        mTicket.setRut(value);
     }
 
-    private void addTrafficViolationView(View rootView, LayoutInflater inflater, int index) {
-        View trafficViolationItem = inflater.inflate(R.layout.item_traffic_violation, null);
-        configureTrafficViolationItem(trafficViolationItem, index);
+    private void checkRut(int rut) {
+        int sum = 0;
+        int counter = 0;
 
-        LinearLayout layout = (LinearLayout)rootView.findViewById(R.id.traffic_violation_container);
-        layout.addView(trafficViolationItem);
+        while (rut > 0) {
+            int digit = rut % 10;
+            sum += digit * RUT_MULTIPLIER[counter];
+            rut /= 10;
+            counter = (counter + 1) % 6;
+        }
 
+        int modulo = sum % 11;
+        if (modulo == 10) {
+            mEditVerifierDigit.setText("K");
+        } else {
+            mEditVerifierDigit.setText("" + modulo);
+        }
 
     }
 }

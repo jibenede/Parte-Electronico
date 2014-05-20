@@ -53,9 +53,13 @@ public class Database {
     private void onCreate() {
         mDatabase.beginTransaction();
 
-        mDatabase.execSQL("create table ticket (_id INTEGER PRIMARY KEY, user_id REFERENCES user(_id) ON DELETE RESTRICT, license_code, date NOT NULL, latitude, longitude);");
-        mDatabase.execSQL("create table violation (_id INTEGER PRIMARY KEY, ticket_id REFERENCES ticket(_id) ON DELETE CASCADE, type, cost);");
-        mDatabase.execSQL("create table picture (_id INTEGER PRIMARY KEY, ticket_id REFERENCES ticket(_id) ON DELETE CASCADE, path);");
+        mDatabase.execSQL("create table ticket (_id INTEGER PRIMARY KEY, " +
+                "user_id REFERENCES user(_id) ON DELETE RESTRICT, license_code, date NOT NULL, latitude, longitude, " +
+                "rut, first_name, last_name, address, vehicle, license_plate);");
+        mDatabase.execSQL("create table violation (_id INTEGER PRIMARY KEY, " +
+                "ticket_id REFERENCES ticket(_id) ON DELETE CASCADE, type, cost);");
+        mDatabase.execSQL("create table picture (_id INTEGER PRIMARY KEY, " +
+                "ticket_id REFERENCES ticket(_id) ON DELETE CASCADE, path);");
         mDatabase.execSQL("create table user (_id INTEGER PRIMARY KEY, username, password);");
 
         // TODO: default user for testing purposes only, delete on final release

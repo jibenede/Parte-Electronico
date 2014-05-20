@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Parte Electronico</string>
+    <string name="username">Nombre de Usuario</string>
+    <string name="password">Contraseña</string>
+    <string name="pin">PIN</string>
+    <string name="login">Ingresar</string>
+    <string name="add_new_ticket">Añadir nuevo parte</string>
+    <string name="add_traffic_violation">Agregar Infracción</string>
+    <string name="select_traffic_violation">---Seleccione Infracción---</string>
+    <string name="traffic_ticket_description">Parte %1$d: %2$td de %2$tB, %2$tH:%2$tM:%2$tS</string>
+    <string name="save">Guardar</string>
+    <string name="first_name">Nombre</string>
+    <string name="last_name">Apellido</string>
+    <string name="rut">RUT</string>
+    <string name="no_id">Sin Carné</string>
+    <string name="address">Dirección</string>
+    <string name="vehicle">Vehículo</string>
+    <string name="license_plate">Patente</string>
+    <string name="ticket_option_details">Detalles</string>
+    <string name="ticket_option_violations">Infracciones</string>
+    <string name="ticket_option_pictures">Fotos</string>
+    <string name="ticket_option_save">Guardar</string>
+</resources>
