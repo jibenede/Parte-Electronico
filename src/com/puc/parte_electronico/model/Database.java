@@ -59,7 +59,7 @@ public class Database {
         mDatabase.execSQL("create table violation (_id INTEGER PRIMARY KEY, " +
                 "ticket_id REFERENCES ticket(_id) ON DELETE CASCADE, type, cost);");
         mDatabase.execSQL("create table picture (_id INTEGER PRIMARY KEY, " +
-                "ticket_id REFERENCES ticket(_id) ON DELETE CASCADE, path);");
+                "ticket_id REFERENCES ticket(_id) ON DELETE CASCADE, path, type);");
         mDatabase.execSQL("create table user (_id INTEGER PRIMARY KEY, username, password);");
 
         // TODO: default user for testing purposes only, delete on final release

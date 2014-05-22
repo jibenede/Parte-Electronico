@@ -51,31 +51,55 @@ public class TicketDetailsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_ticket_details, container, false);
 
         mEditRut = (EditText)view.findViewById(R.id.edit_rut);
-        mEditRut.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        setEditorListener(mEditRut, new OnEditorFinishedListener() {
             @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_NEXT) {
-                    parseRut(v);
-                    return true;
-                }
-                return false;
-            }
-        });
-        mEditRut.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    parseRut((TextView)v);
-                }
+            public void execute() {
+                parseRut(mEditRut);
             }
         });
 
         mEditVerifierDigit = (EditText)view.findViewById(R.id.edit_verifier);
+
         mEditFirstName = (EditText)view.findViewById(R.id.edit_first_name);
+        setEditorListener(mEditFirstName, new OnEditorFinishedListener() {
+            @Override
+            public void execute() {
+                mTicket.setFirstName(mEditFirstName.getText().toString());
+            }
+        });
+
         mEditLastName = (EditText)view.findViewById(R.id.edit_last_name);
+        setEditorListener(mEditLastName, new OnEditorFinishedListener() {
+            @Override
+            public void execute() {
+                mTicket.setLastName(mEditLastName.getText().toString());
+            }
+        });
+
+
         mEditAddress = (EditText)view.findViewById(R.id.edit_address);
+        setEditorListener(mEditAddress, new OnEditorFinishedListener() {
+            @Override
+            public void execute() {
+                mTicket.setAddress(mEditAddress.getText().toString());
+            }
+        });
+
         mEditVehicle = (EditText)view.findViewById(R.id.edit_vehicle);
+        setEditorListener(mEditVehicle, new OnEditorFinishedListener() {
+            @Override
+            public void execute() {
+                mTicket.setVehicle(mEditVehicle.getText().toString());
+            }
+        });
+
         mEditLicensePlate = (EditText)view.findViewById(R.id.edit_license_plate);
+        setEditorListener(mEditLicensePlate, new OnEditorFinishedListener() {
+            @Override
+            public void execute() {
+                mTicket.setLicensePlate(mEditLicensePlate.getText().toString());
+            }
+        });
 
         initializeData();
 
@@ -96,6 +120,12 @@ public class TicketDetailsFragment extends Fragment {
             mEditRut.setText("" + mTicket.getRut());
             checkRut(mTicket.getRut());
         }
+
+        mEditFirstName.setText(mTicket.getFirstName());
+        mEditLastName.setText(mTicket.getLastName());
+        mEditAddress.setText(mTicket.getAddress());
+        mEditVehicle.setText(mTicket.getVehicle());
+        mEditLicensePlate.setText(mTicket.getLicensePlate());
     }
 
     private Bundle getState() {
@@ -127,11 +157,43 @@ public class TicketDetailsFragment extends Fragment {
         }
 
         int modulo = sum % 11;
-        if (modulo == 10) {
+        int verifier = 11 - modulo;
+        if (verifier == 11) {
+            verifier = 0;
+        }
+
+        if (verifier == 10) {
             mEditVerifierDigit.setText("K");
         } else {
-            mEditVerifierDigit.setText("" + modulo);
+            mEditVerifierDigit.setText("" + verifier);
         }
 
     }
+
+    private void setEditorListener(EditText editText, OnEditorFinishedListener listener) {
+        editText.setOnEditorActionListener(listener);
+        editText.setOnFocusChangeListener(listener);
+    }
+
+    static abstract class OnEditorFinishedListener implements TextView.OnEditorActionListener, View.OnFocusChangeListener {
+
+        @Override
+        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+            if (actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_DONE) {
+                execute();
+            }
+            return false;
+        }
+
+        @Override
+        public void onFocusChange(View v, boolean hasFocus) {
+            if (!hasFocus) {
+                execute();
+            }
+        }
+
+        public abstract void execute();
+    }
+
+
 }

@@ -17,19 +17,20 @@ import com.puc.parte_electronico.model.TrafficViolation;
 import com.puc.parte_electronico.model.User;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by jose on 5/13/14.
  */
 public class TicketViolationsFragment extends Fragment {
     public static final String TAG = "TICKET_VIOLATIONS_FRAGMENT";
+    public static final String VIOLATIONS_KEY = "VIOLATIONS_KEY";
+    public static final String EDITABLE_KEY = "EDITABLE_KEY";
     private String[] mTrafficViolationList;
 
     /**
      * A list of the traffic violations defined by this ticket.
      */
-    private List<TrafficViolation> mViolations;
+    private ArrayList<TrafficViolation> mViolations;
 
     /**
      * Flag that signals if the data contained within this form is editable or read only. Should be set to true when
@@ -38,22 +39,27 @@ public class TicketViolationsFragment extends Fragment {
     private boolean mEditable;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_ticket_violations, container, false);
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-        if (getArguments() != null) {
-            mEditable = getArguments().getBoolean("editable", false);
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            mEditable = getArguments().getBoolean(EDITABLE_KEY, false);
+            mViolations = arguments.getParcelableArrayList(VIOLATIONS_KEY);
         }
 
         if (mViolations == null) {
             mViolations = new ArrayList<TrafficViolation>();
-
             mViolations.add(new TrafficViolation());
-            addTrafficViolationView(view, inflater, 0);
-        } else {
-            for (int i = 0; i < mViolations.size(); i++) {
-                addTrafficViolationView(view, inflater, i);
-            }
+        }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_ticket_violations, container, false);
+
+        for (int i = 0; i < mViolations.size(); i++) {
+            addTrafficViolationView(view, inflater, i);
         }
 
         Button addViolationButton = (Button) view.findViewById(R.id.button_add_traffic_violation);
@@ -73,6 +79,21 @@ public class TicketViolationsFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         mTrafficViolationList = getActivity().getResources().getStringArray(R.array.traffic_violations);
     }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        IFragmentCallbacks callback = (IFragmentCallbacks)getActivity();
+        callback.saveState(TAG, getState());
+    }
+
+    private Bundle getState() {
+        Bundle bundle = new Bundle();
+        bundle.putParcelableArrayList(VIOLATIONS_KEY, mViolations);
+        return bundle;
+    }
+
 
     private void saveTicket() {
         User currentUser = Settings.getSettings().getCurrentUser();
@@ -99,8 +120,6 @@ public class TicketViolationsFragment extends Fragment {
                 dialog.show();
             }
         });
-
-
     }
 
     private AlertDialog getTrafficViolationSelectionDialog(final View view, final int index) {

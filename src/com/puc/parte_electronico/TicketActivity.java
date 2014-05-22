@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import com.puc.parte_electronico.fragments.IFragmentCallbacks;
 import com.puc.parte_electronico.fragments.TicketDetailsFragment;
 import com.puc.parte_electronico.fragments.TicketPicturesFragment;
@@ -79,6 +81,16 @@ public class TicketActivity extends Activity implements IFragmentCallbacks {
         outState.putBundle(FRAGMENT_STATES_KEY, mFragmentStates);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == Activity.RESULT_OK &&
+                (requestCode == TicketPicturesFragment.BACKGROUND_CAMERA_CODE ||
+                requestCode == TicketPicturesFragment.EVIDENCE_CAMERA_CODE)) {
+            TicketPicturesFragment fragment = (TicketPicturesFragment)getFragmentManager().findFragmentByTag(
+                    TicketPicturesFragment.TAG);
+            fragment.handlePicture(requestCode);
+        }
+    }
 
     @Override
     public void saveState(String tag, Bundle data) {
@@ -96,13 +108,14 @@ public class TicketActivity extends Activity implements IFragmentCallbacks {
             mActivity = activity;
             mTag = tag;
             mClass = clazz;
+            mFragment = mActivity.getFragmentManager().findFragmentByTag(mTag);
         }
 
         @Override
         public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
-            if (mFragment == null) {
-                // If not, instantiate and add it to the activity
+            hideSoftKeyboard();
 
+            if (mFragment == null) {
                 mFragment = Fragment.instantiate(mActivity, mClass.getName());
                 Bundle arguments = mActivity.mFragmentStates.getBundle(mTag);
                 if (arguments != null) {
@@ -111,7 +124,6 @@ public class TicketActivity extends Activity implements IFragmentCallbacks {
 
                 ft.replace(R.id.top_view, mFragment, mTag);
             } else {
-                // If it exists, simply attach it in order to show it
                 ft.replace(R.id.top_view, mFragment, mTag);
             }
         }
@@ -124,6 +136,18 @@ public class TicketActivity extends Activity implements IFragmentCallbacks {
         @Override
         public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
 
+        }
+
+        private void hideSoftKeyboard() {
+            InputMethodManager inputManager = (InputMethodManager) mActivity.getSystemService(
+                    Context.INPUT_METHOD_SERVICE);
+
+            //check if no view has focus:
+            View v = mActivity.getCurrentFocus();
+            if(v == null)
+                return;
+
+            inputManager.hideSoftInputFromWindow(v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
     }
 }

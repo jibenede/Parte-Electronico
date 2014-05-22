@@ -21,4 +21,7 @@
     <string name="ticket_option_violations">Violations</string>
     <string name="ticket_option_pictures">Pictures</string>
     <string name="ticket_option_save">Save</string>
+    <string name="background">Background</string>
+    <string name="evidence">Evidence</string>
+    <string name="add">Add</string>
 </resources>

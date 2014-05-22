@@ -21,4 +21,7 @@
     <string name="ticket_option_violations">Infracciones</string>
     <string name="ticket_option_pictures">Fotos</string>
     <string name="ticket_option_save">Guardar</string>
+    <string name="background">Antecedentes</string>
+    <string name="evidence">Evidencia</string>
+    <string name="add">Agregar</string>
 </resources>

@@ -15,13 +15,16 @@
             android:ems="10"
             android:id="@+id/edit_rut"
             android:layout_weight="1"
-            android:hint="@string/rut"/>
+            android:hint="@string/rut"
+            android:imeOptions="actionNext"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="-"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:id="@+id/textView" />
 
         <EditText
@@ -44,30 +47,40 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/edit_first_name"
-        android:hint="@string/first_name"/>
+        android:hint="@string/first_name"
+        android:imeOptions="actionNext"
+        android:singleLine="true"/>
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/edit_last_name"
-        android:hint="@string/last_name"/>
+        android:hint="@string/last_name"
+        android:imeOptions="actionNext"
+        android:singleLine="true"/>
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/edit_address"
-        android:hint="@string/address"/>
+        android:hint="@string/address"
+        android:imeOptions="actionNext"
+        android:singleLine="true"/>
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/edit_vehicle"
-        android:hint="@string/vehicle"/>
+        android:hint="@string/vehicle"
+        android:imeOptions="actionNext"
+        android:singleLine="true"/>
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/edit_license_plate"
-        android:hint="@string/license_plate"/>
+        android:hint="@string/license_plate"
+        android:imeOptions="actionDone"
+        android:singleLine="true"/>
 
 </LinearLayout>
