@@ -11,12 +11,16 @@ import com.puc.parte_electronico.adapters.TicketListAdapter;
 import com.puc.parte_electronico.globals.Settings;
 import net.sqlcipher.database.SQLiteDatabase;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by jose on 5/13/14.
  */
 public class TrafficTicket implements Parcelable {
+    public static final String TICKET_KEY = "TICKET_KEY";
+
     private static long sLastInsertTime;
 
     private int mId;
@@ -35,10 +39,17 @@ public class TrafficTicket implements Parcelable {
     private String mVehicle;
     private String mLicensePlate;
 
+
+    private ArrayList<TrafficViolation> mViolations;
+    private ArrayList<Picture> mPictures;
+
     public TrafficTicket(User user) {
         mUser = user;
         mUserId = mUser.getId();
         mDate = new Date().getTime();
+
+        mViolations = new ArrayList<TrafficViolation>();
+        mPictures = new ArrayList<Picture>();
     }
 
     public TrafficTicket(Parcel in) {
@@ -76,6 +87,9 @@ public class TrafficTicket implements Parcelable {
         mAddress = in.readString();
         mVehicle = in.readString();
         mLicensePlate = in.readString();
+
+        mViolations = in.readArrayList(TrafficViolation.class.getClassLoader());
+        mPictures = in.readArrayList(Picture.class.getClassLoader());
     }
 
     public TrafficTicket(Cursor cursor) {
@@ -92,6 +106,11 @@ public class TrafficTicket implements Parcelable {
         mAddress = cursor.getString(cursor.getColumnIndex("address"));
         mVehicle = cursor.getString(cursor.getColumnIndex("vehicle"));
         mLicensePlate = cursor.getString(cursor.getColumnIndex("license_plate"));
+    }
+
+    public boolean isValid() {
+        // TODO: implement
+        return true;
     }
 
     public Integer getLicenseCode() {
@@ -166,6 +185,22 @@ public class TrafficTicket implements Parcelable {
         mLicensePlate = licensePlate;
     }
 
+    public List<Picture> getPictures() {
+        return mPictures;
+    }
+
+    public void addPicture(Picture picture) {
+        mPictures.add(picture);
+    }
+
+    public List<TrafficViolation> getViolations() {
+        return mViolations;
+    }
+
+    public void addTrafficViolation(TrafficViolation violation) {
+        mViolations.add(violation);
+    }
+
     public static CursorAdapter getAdapter(Context context) {
         Settings settings = Settings.getSettings();
         SQLiteDatabase database = settings.getDatabase().getDatabase();
@@ -191,6 +226,17 @@ public class TrafficTicket implements Parcelable {
         database.insertOrThrow("ticket", null, getContentValues());
 
         sLastInsertTime = System.currentTimeMillis();
+    }
+
+    public String getPrinterStringSummary() {
+        // TODO: finish formatting string
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("RUT: " + mRut + "\n");
+        buffer.append("Nombre: " + mFirstName + "\n");
+        buffer.append("Appellido: " + mLastName + "\n");
+        buffer.append("Direccion: " + mAddress + "\n");
+        buffer.append("Esto es una prueba");
+        return buffer.toString();
     }
 
     protected ContentValues getContentValues() {
@@ -259,6 +305,8 @@ public class TrafficTicket implements Parcelable {
         out.writeString(mVehicle);
         out.writeString(mLicensePlate);
 
+        out.writeList(mViolations);
+        out.writeList(mPictures);
     }
 
 }

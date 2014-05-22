@@ -2,6 +2,7 @@ package com.puc.parte_electronico.fragments;
 
 import android.app.Fragment;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,7 +11,6 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 import com.puc.parte_electronico.R;
-import com.puc.parte_electronico.globals.Settings;
 import com.puc.parte_electronico.model.TrafficTicket;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,7 +19,6 @@ import org.jetbrains.annotations.Nullable;
  */
 public class TicketDetailsFragment extends Fragment {
     public static final String TAG = "TICKET_DETAILS_FRAGMENT";
-    private static final String TICKET_KEY = "TICKET_KEY";
     private final int[] RUT_MULTIPLIER = new int[] { 2, 3, 4, 5, 6, 7 };
 
     private TrafficTicket mTicket;
@@ -31,17 +30,14 @@ public class TicketDetailsFragment extends Fragment {
     private EditText mEditAddress;
     private EditText mEditVehicle;
     private EditText mEditLicensePlate;
+    private EditText mEditDescription;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Bundle arguments = getArguments();
         if (arguments != null) {
-            mTicket = arguments.getParcelable(TICKET_KEY);
-        }
-
-        if (mTicket == null) {
-            mTicket = new TrafficTicket(Settings.getSettings().getCurrentUser());
+            mTicket = arguments.getParcelable(TrafficTicket.TICKET_KEY);
         }
     }
 
@@ -101,6 +97,13 @@ public class TicketDetailsFragment extends Fragment {
             }
         });
 
+        mEditDescription = (EditText)view.findViewById(R.id.edit_description);
+        mEditDescription.setInputType(InputType.TYPE_CLASS_TEXT);
+        mEditDescription.setSingleLine(true);
+        mEditDescription.setLines(6);
+        mEditDescription.setHorizontallyScrolling(false);
+        mEditDescription.setImeOptions(EditorInfo.IME_ACTION_DONE);
+
         initializeData();
 
         return view;
@@ -111,7 +114,7 @@ public class TicketDetailsFragment extends Fragment {
         super.onPause();
 
         IFragmentCallbacks callback = (IFragmentCallbacks)getActivity();
-        callback.saveState(TAG, getState());
+        callback.updateTicket(mTicket);
     }
 
     private void initializeData() {
@@ -126,12 +129,6 @@ public class TicketDetailsFragment extends Fragment {
         mEditAddress.setText(mTicket.getAddress());
         mEditVehicle.setText(mTicket.getVehicle());
         mEditLicensePlate.setText(mTicket.getLicensePlate());
-    }
-
-    private Bundle getState() {
-        Bundle bundle = new Bundle();
-        bundle.putParcelable(TICKET_KEY, mTicket);
-        return bundle;
     }
 
     private void parseRut(TextView v) {

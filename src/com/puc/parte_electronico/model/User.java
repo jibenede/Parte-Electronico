@@ -14,6 +14,14 @@ public class User {
     private String mPassword;
     private String mHashedPassword;
 
+    private String mFirstName;
+    private String mLastName;
+    private String mPrecinct;
+    private int mCourthouseNumber;
+    private String mCourthouseCity;
+    private String mPlaque;
+    private String mRank;
+
     public User(String username, String hashedPassword) {
         mUsername = username;
         mHashedPassword = hashedPassword;
@@ -23,6 +31,14 @@ public class User {
         mId = cursor.getInt(cursor.getColumnIndex("_id"));
         mUsername = cursor.getString(cursor.getColumnIndex("username"));
         mHashedPassword = cursor.getString(cursor.getColumnIndex("password"));
+
+        mFirstName = cursor.getString(cursor.getColumnIndex("first_name"));
+        mLastName = cursor.getString(cursor.getColumnIndex("last_name"));
+        mPrecinct = cursor.getString(cursor.getColumnIndex("precinct"));
+        mCourthouseNumber = cursor.getInt(cursor.getColumnIndex("courthouse_number"));
+        mCourthouseCity = cursor.getString(cursor.getColumnIndex("courthouse_city"));
+        mPlaque = cursor.getString(cursor.getColumnIndex("plaque"));
+        mRank = cursor.getString(cursor.getColumnIndex("rank"));
     }
 
     public int getId() {

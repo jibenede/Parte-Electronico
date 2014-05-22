@@ -26,9 +26,9 @@ import android.widget.ImageView;
 import com.puc.parte_electronico.R;
 import com.puc.parte_electronico.globals.ImageTransform;
 import com.puc.parte_electronico.model.Picture;
+import com.puc.parte_electronico.model.TrafficTicket;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.UUID;
 
 /**
@@ -50,7 +50,7 @@ public class TicketPicturesFragment extends Fragment {
 
     private Animator mCurrentAnimator;
 
-    private ArrayList<Picture> mPictures;
+    private TrafficTicket mTicket;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,11 +59,7 @@ public class TicketPicturesFragment extends Fragment {
 
         Bundle arguments = getArguments();
         if (arguments != null) {
-            mPictures = arguments.getParcelableArrayList(PICTURES_KEY);
-        }
-
-        if (mPictures == null) {
-            mPictures = new ArrayList<Picture>();
+            mTicket = arguments.getParcelable(TrafficTicket.TICKET_KEY);
         }
     }
 
@@ -100,7 +96,7 @@ public class TicketPicturesFragment extends Fragment {
         super.onPause();
 
         IFragmentCallbacks callback = (IFragmentCallbacks)getActivity();
-        callback.saveState(TAG, getState());
+        callback.updateTicket(mTicket);
     }
 
     @Override
@@ -109,14 +105,8 @@ public class TicketPicturesFragment extends Fragment {
         Log.i("TEST", "saving state");
     }
 
-    private Bundle getState() {
-        Bundle bundle = new Bundle();
-        bundle.putParcelableArrayList(PICTURES_KEY, mPictures);
-        return bundle;
-    }
-
     private void initializeView(View view) {
-        for (Picture picture : mPictures) {
+        for (Picture picture : mTicket.getPictures()) {
             addPicture(picture.getBitmap(), picture.getType());
         }
     }
@@ -329,9 +319,9 @@ public class TicketPicturesFragment extends Fragment {
         @Override
         protected void onPostExecute(Bitmap thumbnail) {
             if (thumbnail != null) {
-                Picture picture = new Picture(null, mOutputFile.getAbsolutePath(), mType);
+                Picture picture = new Picture(mTicket, mOutputFile.getAbsolutePath(), mType);
                 picture.setBitmap(thumbnail);
-                mPictures.add(picture);
+                mTicket.addPicture(picture);
 
                 addPicture(thumbnail, mType);
             } else {

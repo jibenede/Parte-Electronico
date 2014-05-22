@@ -21,12 +21,15 @@ public class Picture implements Parcelable {
     private Bitmap mBitmap;
 
     public Picture(TrafficTicket ticket, String path, int type) {
+        mTicketId = ticket.getId();
         mTicket = ticket;
         mPath = path;
         mType = type;
     }
 
     public Picture(Parcel in) {
+        mId = in.readInt();
+        mTicketId = in.readInt();
         mTicket = in.readParcelable(TrafficTicket.class.getClassLoader());
         mPath = in.readString();
         mType = in.readInt();
@@ -70,6 +73,8 @@ public class Picture implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(mId);
+        dest.writeInt(mTicketId);
         dest.writeParcelable(mTicket, 0);
         dest.writeString(mPath);
         dest.writeInt(mType);

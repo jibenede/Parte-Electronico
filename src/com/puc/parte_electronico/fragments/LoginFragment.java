@@ -1,26 +1,22 @@
 package com.puc.parte_electronico.fragments;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
 import android.app.Fragment;
 import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.text.TextUtils;
-import android.view.KeyEvent;
-import android.os.AsyncTask;
-import android.annotation.TargetApi;
-import android.animation.Animator;
-import android.os.Bundle;
-import android.os.Build;
-import android.animation.AnimatorListenerAdapter;
-import android.view.inputmethod.EditorInfo;
-import android.widget.Toast;
-
-import com.puc.parte_electronico.MainActivity;
 import com.puc.parte_electronico.NavigationActivity;
 import com.puc.parte_electronico.R;
 import com.puc.parte_electronico.globals.Settings;
@@ -145,11 +141,13 @@ public class LoginFragment extends Fragment {
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
-        } else if (!mEmail.contains("@")) {
+        }
+        /*
+        else if (!mEmail.contains("@")) {
             mEmailView.setError(getString(R.string.error_invalid_email));
             focusView = mEmailView;
             cancel = true;
-        }
+        }*/
 
         if (cancel) {
             // There was an error; don't attempt login and focus the first

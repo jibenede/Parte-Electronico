@@ -60,12 +60,20 @@ public class Database {
                 "ticket_id REFERENCES ticket(_id) ON DELETE CASCADE, type, cost);");
         mDatabase.execSQL("create table picture (_id INTEGER PRIMARY KEY, " +
                 "ticket_id REFERENCES ticket(_id) ON DELETE CASCADE, path, type);");
-        mDatabase.execSQL("create table user (_id INTEGER PRIMARY KEY, username, password);");
+        mDatabase.execSQL("create table user (_id INTEGER PRIMARY KEY, username, password, first_name, last_name, " +
+                "precinct, courthouse_number, courthouse_city, plaque, rank);");
 
         // TODO: default user for testing purposes only, delete on final release
         ContentValues cv = new ContentValues();
         cv.put("username", "admin");
         cv.put("password", CryptoUtilities.hash("1234"));
+        cv.put("first_name", "Juan");
+        cv.put("last_name", "Perez");
+        cv.put("precinct", "1a Comisaría");
+        cv.put("courthouse_number", 1);
+        cv.put("courthouse_city", "Santiago");
+        cv.put("plaque", "123456-K");
+        cv.put("rank", "Sargento");
         mDatabase.insert("user", null, cv);
 
         mDatabase.setTransactionSuccessful();

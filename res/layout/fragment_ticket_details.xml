@@ -80,7 +80,15 @@
         android:layout_height="wrap_content"
         android:id="@+id/edit_license_plate"
         android:hint="@string/license_plate"
-        android:imeOptions="actionDone"
+        android:imeOptions="actionNext"
         android:singleLine="true"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/edit_description"
+        android:hint="@string/description"
+        android:imeOptions="actionDone"
+        android:gravity="top"/>
 
 </LinearLayout>

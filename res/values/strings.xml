@@ -24,4 +24,7 @@
     <string name="background">Antecedentes</string>
     <string name="evidence">Evidencia</string>
     <string name="add">Agregar</string>
+    <string name="print">Imprimir</string>
+    <string name="queue">Encolar</string>
+    <string name="description">Descripción</string>
 </resources>

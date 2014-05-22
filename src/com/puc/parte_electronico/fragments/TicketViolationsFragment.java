@@ -11,12 +11,8 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.puc.parte_electronico.R;
-import com.puc.parte_electronico.globals.Settings;
 import com.puc.parte_electronico.model.TrafficTicket;
 import com.puc.parte_electronico.model.TrafficViolation;
-import com.puc.parte_electronico.model.User;
-
-import java.util.ArrayList;
 
 /**
  * Created by jose on 5/13/14.
@@ -30,7 +26,7 @@ public class TicketViolationsFragment extends Fragment {
     /**
      * A list of the traffic violations defined by this ticket.
      */
-    private ArrayList<TrafficViolation> mViolations;
+    private TrafficTicket mTicket;
 
     /**
      * Flag that signals if the data contained within this form is editable or read only. Should be set to true when
@@ -45,12 +41,7 @@ public class TicketViolationsFragment extends Fragment {
         Bundle arguments = getArguments();
         if (arguments != null) {
             mEditable = getArguments().getBoolean(EDITABLE_KEY, false);
-            mViolations = arguments.getParcelableArrayList(VIOLATIONS_KEY);
-        }
-
-        if (mViolations == null) {
-            mViolations = new ArrayList<TrafficViolation>();
-            mViolations.add(new TrafficViolation());
+            mTicket = arguments.getParcelable(TrafficTicket.TICKET_KEY);
         }
     }
 
@@ -58,7 +49,7 @@ public class TicketViolationsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_ticket_violations, container, false);
 
-        for (int i = 0; i < mViolations.size(); i++) {
+        for (int i = 0; i < mTicket.getViolations().size(); i++) {
             addTrafficViolationView(view, inflater, i);
         }
 
@@ -66,8 +57,8 @@ public class TicketViolationsFragment extends Fragment {
         addViolationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mViolations.add(new TrafficViolation());
-                addTrafficViolationView(getView(), getActivity().getLayoutInflater(), mViolations.size() - 1);
+                mTicket.addTrafficViolation(new TrafficViolation());
+                addTrafficViolationView(getView(), getActivity().getLayoutInflater(), mTicket.getViolations().size() - 1);
             }
         });
 
@@ -85,27 +76,11 @@ public class TicketViolationsFragment extends Fragment {
         super.onPause();
 
         IFragmentCallbacks callback = (IFragmentCallbacks)getActivity();
-        callback.saveState(TAG, getState());
+        callback.updateTicket(mTicket);
     }
-
-    private Bundle getState() {
-        Bundle bundle = new Bundle();
-        bundle.putParcelableArrayList(VIOLATIONS_KEY, mViolations);
-        return bundle;
-    }
-
-
-    private void saveTicket() {
-        User currentUser = Settings.getSettings().getCurrentUser();
-
-        TrafficTicket ticket = new TrafficTicket(currentUser);
-        ticket.insert();
-        getActivity().finish();
-    }
-
 
     private void configureTrafficViolationItem(final View view, final int index) {
-        TrafficViolation violation = mViolations.get(index);
+        TrafficViolation violation = mTicket.getViolations().get(index);
 
         Button button = (Button) view.findViewById(R.id.button_select_traffic_violation);
         TextView costLabel = (TextView) view.findViewById(R.id.label_price);
@@ -127,7 +102,7 @@ public class TicketViolationsFragment extends Fragment {
         builder.setTitle("placeholder")
                 .setItems(mTrafficViolationList, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        setViolationValues(mViolations.get(index), mTrafficViolationList[which], 100000, view);
+                        setViolationValues(mTicket.getViolations().get(index), mTrafficViolationList[which], 100000, view);
                     }
                 });
         return builder.create();
