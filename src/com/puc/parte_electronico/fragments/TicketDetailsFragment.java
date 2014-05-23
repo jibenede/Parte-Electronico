@@ -17,7 +17,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Created by jose on 5/19/14.
  */
-public class TicketDetailsFragment extends Fragment {
+public class TicketDetailsFragment extends Fragment implements ITicketFragment {
     public static final String TAG = "TICKET_DETAILS_FRAGMENT";
     private final int[] RUT_MULTIPLIER = new int[] { 2, 3, 4, 5, 6, 7 };
 
@@ -103,6 +103,12 @@ public class TicketDetailsFragment extends Fragment {
         mEditDescription.setLines(6);
         mEditDescription.setHorizontallyScrolling(false);
         mEditDescription.setImeOptions(EditorInfo.IME_ACTION_DONE);
+        setEditorListener(mEditDescription, new OnEditorFinishedListener() {
+            @Override
+            public void execute() {
+                mTicket.setDescription(mEditDescription.getText().toString());
+            }
+        });
 
         initializeData();
 
@@ -115,6 +121,11 @@ public class TicketDetailsFragment extends Fragment {
 
         IFragmentCallbacks callback = (IFragmentCallbacks)getActivity();
         callback.updateTicket(mTicket);
+    }
+
+    @Override
+    public TrafficTicket getTicket() {
+        return mTicket;
     }
 
     private void initializeData() {

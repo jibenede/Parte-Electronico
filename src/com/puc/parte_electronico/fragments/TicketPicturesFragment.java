@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -14,7 +15,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,7 +34,7 @@ import java.util.UUID;
 /**
  * Created by jose on 5/13/14.
  */
-public class TicketPicturesFragment extends Fragment {
+public class TicketPicturesFragment extends Fragment implements ITicketFragment {
     public static final String TAG = "TICKET_PICTURES_FRAGMENT";
     public static final int BACKGROUND_CAMERA_CODE = 1000;
     public static final int EVIDENCE_CAMERA_CODE = 1001;
@@ -53,8 +53,8 @@ public class TicketPicturesFragment extends Fragment {
     private TrafficTicket mTicket;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
         setRetainInstance(true);
 
         Bundle arguments = getArguments();
@@ -100,9 +100,8 @@ public class TicketPicturesFragment extends Fragment {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        Log.i("TEST", "saving state");
+    public TrafficTicket getTicket() {
+        return mTicket;
     }
 
     private void initializeView(View view) {

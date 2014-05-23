@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.bixolon.printer.BixolonPrinter;
 import com.puc.parte_electronico.R;
@@ -85,6 +86,9 @@ public class SummaryFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_summary, container, false);
+
+        TextView summaryTextView = (TextView)view.findViewById(R.id.text_summary);
+        summaryTextView.setText(mTicket.getPrinterStringSummary());
 
         mPrintButton = (Button) view.findViewById(R.id.button_print);
         mPrintButton.setOnClickListener(new View.OnClickListener() {

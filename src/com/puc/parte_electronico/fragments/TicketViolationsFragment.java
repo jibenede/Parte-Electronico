@@ -4,12 +4,12 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.view.inputmethod.EditorInfo;
+import android.widget.*;
 import com.puc.parte_electronico.R;
 import com.puc.parte_electronico.model.TrafficTicket;
 import com.puc.parte_electronico.model.TrafficViolation;
@@ -17,7 +17,7 @@ import com.puc.parte_electronico.model.TrafficViolation;
 /**
  * Created by jose on 5/13/14.
  */
-public class TicketViolationsFragment extends Fragment {
+public class TicketViolationsFragment extends Fragment implements ITicketFragment {
     public static final String TAG = "TICKET_VIOLATIONS_FRAGMENT";
     public static final String VIOLATIONS_KEY = "VIOLATIONS_KEY";
     public static final String EDITABLE_KEY = "EDITABLE_KEY";
@@ -49,27 +49,25 @@ public class TicketViolationsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_ticket_violations, container, false);
 
-        for (int i = 0; i < mTicket.getViolations().size(); i++) {
-            addTrafficViolationView(view, inflater, i);
+        mTrafficViolationList = getActivity().getResources().getStringArray(R.array.traffic_violations);
+
+        for (TrafficViolation violation : mTicket.getViolations()) {
+            addTrafficViolationView(view, inflater, violation);
         }
 
         Button addViolationButton = (Button) view.findViewById(R.id.button_add_traffic_violation);
         addViolationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mTicket.addTrafficViolation(new TrafficViolation());
-                addTrafficViolationView(getView(), getActivity().getLayoutInflater(), mTicket.getViolations().size() - 1);
+                TrafficViolation violation = new TrafficViolation();
+                mTicket.addTrafficViolation(violation);
+                addTrafficViolationView(getView(), getActivity().getLayoutInflater(), violation);
             }
         });
 
         return view;
     }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        mTrafficViolationList = getActivity().getResources().getStringArray(R.array.traffic_violations);
-    }
 
     @Override
     public void onPause() {
@@ -79,30 +77,17 @@ public class TicketViolationsFragment extends Fragment {
         callback.updateTicket(mTicket);
     }
 
-    private void configureTrafficViolationItem(final View view, final int index) {
-        TrafficViolation violation = mTicket.getViolations().get(index);
-
-        Button button = (Button) view.findViewById(R.id.button_select_traffic_violation);
-        TextView costLabel = (TextView) view.findViewById(R.id.label_price);
-        if (violation.getType() != null) {
-            button.setText(violation.getType());
-            costLabel.setText("" + violation.getValue());
-        }
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AlertDialog dialog = getTrafficViolationSelectionDialog(view, index);
-                dialog.show();
-            }
-        });
+    @Override
+    public TrafficTicket getTicket() {
+        return mTicket;
     }
 
-    private AlertDialog getTrafficViolationSelectionDialog(final View view, final int index) {
+    private AlertDialog getTrafficViolationSelectionDialog(final View view, final TrafficViolation violation) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("placeholder")
+        builder.setTitle(getString(R.string.select_traffic_violation))
                 .setItems(mTrafficViolationList, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        setViolationValues(mTicket.getViolations().get(index), mTrafficViolationList[which], 100000, view);
+                        setViolationValues(violation, mTrafficViolationList[which], 100000, view);
                     }
                 });
         return builder.create();
@@ -112,20 +97,79 @@ public class TicketViolationsFragment extends Fragment {
         violation.setType(type);
         violation.setValue(cost);
 
-        Button button = (Button)container.findViewById(R.id.button_select_traffic_violation);
-        button.setText(type);
-
-        TextView label = (TextView)container.findViewById(R.id.label_price);
-        label.setText("" + cost);
+        EditText editText = (EditText)container.findViewById(R.id.edit_traffic_violation);
+        editText.setText(type);
     }
 
-    private void addTrafficViolationView(View rootView, LayoutInflater inflater, int index) {
+    private void addTrafficViolationView(View rootView, LayoutInflater inflater, TrafficViolation violation) {
         View trafficViolationItem = inflater.inflate(R.layout.item_traffic_violation, null);
-        configureTrafficViolationItem(trafficViolationItem, index);
+        configureTrafficViolationItem(trafficViolationItem, violation);
 
         LinearLayout layout = (LinearLayout)rootView.findViewById(R.id.traffic_violation_container);
         layout.addView(trafficViolationItem);
+    }
 
+    // static int id = 10000000;
+
+    private void configureTrafficViolationItem(final View view, final TrafficViolation violation) {
+        AutoCompleteTextView autoCompleteTextView = (AutoCompleteTextView)view.findViewById(
+                R.id.edit_traffic_violation);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
+                R.layout.autocomplete_traffic_violation, R.id.suggestion, mTrafficViolationList);
+        autoCompleteTextView.setAdapter(adapter);
+
+        autoCompleteTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_DONE) {
+                    String text = v.getText().toString();
+                    if (isTrafficViolationValid(text)) {
+                        violation.setType(text);
+                    } else {
+                        v.setError(getString(R.string.invalid_violation));
+                    }
+
+                }
+                return false;
+            }
+        });
+        autoCompleteTextView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    String text = ((EditText)v).getText().toString();
+                    if (isTrafficViolationValid(text)) {
+                        violation.setType(text);
+                    } else {
+                        ((EditText)v).setError(getString(R.string.invalid_violation));
+                    }
+                }
+            }
+        });
+
+        if (violation.getType() != null) {
+            autoCompleteTextView.setText(violation.getType());
+        }
+
+        ImageButton button = (ImageButton) view.findViewById(R.id.button_select_violation);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog dialog = getTrafficViolationSelectionDialog(view, violation);
+                dialog.show();
+            }
+        });
 
     }
+
+    private boolean isTrafficViolationValid(String text) {
+        for (String s : mTrafficViolationList) {
+            if (text.equals(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 }

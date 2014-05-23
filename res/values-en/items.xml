@@ -1,12 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="traffic_violations">
+        <!-- Faltas Gravisimas -->
+
         <item>Conducir bajo la influencia del alcohol</item>
         <item>Conducir vehículo bajo influencia drogas o estupefacientes</item>
         <item>No respetar señal pare</item>
         <item>No respetar la luz roja del semáforo</item>
         <item>Conducir vehículo a mayor velocidad de la máxima legal permitida</item>
         <item>Conducir sin haber obtenido licencia de conducir</item>
+
+        <!-- Faltas Graves -->
+
+        <item>Conducir vehículo en condiciones físicas deficientes</item>
+        <item>Conducir vehículo en condiciones psíquicas deficientes</item>
+        <item>Revisión Técnica vencida o rechazada</item>
+        <item>Sobrepasar a otro vehículo por berma</item>
+        <item>Con una licencia de conducir distinta a la que corresponde, salvo que se requiera licencia profesional</item>
+        <item>Sobrepasar o adelantar en puente, viaducto, túnel o cruce de ferrocarril, o al aproximarse a cualquiera de estos lugares desde una distancia de 200 metros o al llegar a la cima de una cuesta, en un paso para peatones, en un cruce no regulado, o sobrepasar por la berma</item>
+        <item>Adelantar vehículo en curva, puente, túnel, paso bajo y sobre nivel</item>
+        <item>Entregar el dueño o tenedor manejo de vehículo a persona que no cumpla con los requisitos para conducir</item>
+        <item>Conducir vehículo sin placa patente</item>
+        <item>Desobedecer señal u orden de tránsito de un integrante de carabineros</item>
+        <item>Desobedecer orden o señal de tránsito de un inspector Fiscal en los procedimientos de fiscalización del transporte publico y privado remunerado de pasajeros y transporte de carga</item>
+        <item>No respetar los signos y demás señales que rigen el transito publico, que no sean las indicadas en el numero 2 del articulo nº 197</item>
+        <item>Colgarse de vehículo en marcha</item>
+        <item>No transitar uno en pos de otro (motos y bicicletas)</item>
+        <item>Conducir vehículo contra el tránsito</item>
+        <item>Conducir por izquierda en vía de tránsito de ambos sentidos, salvo que se pueda hacer la maniobra con seguridad por estar despejado</item>
+        <item>No respetar preferencia de peatón</item>
+        <item>No respetar preferencia de otro vehículo</item>
+        <item>Estacionar frente a las puertas de garajes de casas particulares y de estacionamientos comerciales</item>
+        <item>Estacionar un vehículo a menos de 10 metros de un signo Pare, ceda el Paso, de advertencia de peligro, (tales como escuela, Curva) bajo nivel, en cuestas, en curvas de camino</item>
+        <item>Estacionar un vehículo a menos de 156 metros de la puerta principal de entrada a recintos militares</item>
+        <item>No respetar preferencia al virar</item>
+        <item>Virar desde segunda o tercera pista</item>
+        <item>Conducir vehículo con sistema de dirección deficiente</item>
+        <item>Conducir vehículos con sistema de frenos deficientes</item>
+        <item>Conducir vehículo sin luces, en la horas y circunstancias que la Ley exige</item>
+        <item>Conducir vehículo con uno más neumáticos en mal estado</item>
+        <item>No bajar luz en carretera al enfrentar o acercarse por detrás de otro vehículo</item>
+        <item>Conducir vehículo Infringiendo contaminación ambiental</item>
+        <item>Id anterior sólo locomoción colectiva Ley 19.040</item>
+        <item>Mantener animales sueltos en vía publica</item>
+        <item>Mantener cercos en mal estado</item>
+        <item>No detener vehículo ante línea férrea</item>
+        <item>Conducir vehículo de locomoción colectiva o transporte escolar con revisión técnica rechazada o vencida</item>
+        <item>Efectuar servicio público de transporte de pasajeros sin revisión técnica</item>
+        <item>Conducir taxi sin taxímetro debiendo llevarlo</item>
+        <item>Conducir taxi sin sello</item>
+        <item>Conducir taxi con taxímetro acondicionado</item>
+        <item>Colocar combustible a vehículo de locomoción colectiva con pasajeros en su interior</item>
+        <item>Conducir vehiculo de locomoción colectiva sin tacógrafo u otro elemento que controle la velocidad y distancia</item>
+        <item>Conducir vehiculo de locomoción colectiva con tacógrafo y otro dispositivo de medición en mal estado</item>
+        <item>Conducir un vehiculo sin permiso de circulación o sin certificado de seguro obligatorio certificado vigente de seguro obligatorio de accidentes</item>
+        <item>Tomar a dejar pasajeros en parada o lugar no autorizado</item>
+        <item>Carga y descarga en lugares prohibidos</item>
+        <item>Estacionar en sitio prohibido señalizado</item>
+        <item>Estacionar en lugar reservado sin conductor al volante</item>
+        <item>No tener póliza de seguro obligatorio vigente</item>
+        <item>Ingresar vehiculo tracción animal a zona prohibida</item>
+        <item>Certificado de análisis de gases vencido</item>
+        <item>Sin freno de mano (loc. Colectiva)</item>
+        <item>Estacionar o bloquear pasada de peatones</item>
+        <item>Negarse a avanzar con luz verde al frente</item>
+        <item>Vehiculo de carga excede dimensiones o carga mal estibada</item>
+        <item>No mantener un vehiculo las características técnicas y dimensiones de construcción</item>
+        <item>Usar estacionamiento exclusivo para discapacitados</item>
+        <item>No respetar vías o pistas exclusivas</item>
+        <item>No respetar zonas de acceso prohibido para vehículos</item>
+        <item>Detener o estacionar vehiculo en doble fila</item>
+        <item>Cruzar línea férrea en lugar no autorizado</item>
+        <item>Conducir sin cinturones de seguridad del.</item>
+        <item>Conducir haciendo uso de teléfono celular u otro aparato de telecomunicaciones, salvo que tal uso se efectué por medio de un sistema de manos libres, det. Regl.</item>
+        <item>Puertas abiertas vehiculo Locomoción Colectiva en circulación o pasajeros en la pisadera y no detener junto a la acera a tomar pasajeros</item>
+        <item>Circular por la mitad izquierda de la calzada</item>
+        <item>Transitar en área urbana con restricciones contaminación ambiental, sin estar autorizado</item>
+        <item>Usar cualquier elemento destinado a evadir la fiscalización</item>
+        <item>Arrojar cigarrillos o cualquier elemento encendido desde un vehiculo</item>
+        <item>Usar los particulares dispositivos propios de vehículos de emergencia, salvo los autorizados por reglamento</item>
+        <item>Detenerse, tratándose de medios de la locomoción colectiva publica, en la intersección de calles, a tomar o dejar pasajeros, en segunda fila o paraderos no autorizados</item>
+        <item>Toda infracción declarada por el juez como causa principal de un accidente de transito que origine daño o lesiones leves</item>
+
+        <!-- Faltas menos graves -->
+
+        <!-- Faltas leves -->
+        <item>Otro</item>
+
     </string-array>
 
 </resources>

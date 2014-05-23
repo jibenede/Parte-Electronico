@@ -61,6 +61,34 @@ public class User {
         return mHashedPassword;
     }
 
+    public String getFirstName() {
+        return mFirstName;
+    }
+
+    public String getLastName() {
+        return mLastName;
+    }
+
+    public String getPrecinct() {
+        return mPrecinct;
+    }
+
+    public int getCourthouseNumber() {
+        return mCourthouseNumber;
+    }
+
+    public String getCourthouseCity() {
+        return mCourthouseCity;
+    }
+
+    public String getPlaque() {
+        return mPlaque;
+    }
+
+    public String getRank() {
+        return mRank;
+    }
+
     @Nullable
     public static User getUser(Database database, String username, String password) {
         SQLiteDatabase db = database.getDatabase();
@@ -73,6 +101,22 @@ public class User {
         if (found) {
             user = new User(cursor);
             user.setPassword(password);
+        }
+
+        cursor.close();
+        return user;
+    }
+
+    @Nullable
+    public static User getUser(Database database, int id) {
+        SQLiteDatabase db = database.getDatabase();
+        User user = null;
+
+        String[] selectionArgs = new String[] { "" + id };
+        Cursor cursor = db.query("user", null, "_id = ?", selectionArgs, null, null, null, "1");
+        boolean found = cursor.moveToFirst();
+        if (found) {
+            user = new User(cursor);
         }
 
         cursor.close();

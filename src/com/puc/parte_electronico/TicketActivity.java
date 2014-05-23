@@ -84,6 +84,7 @@ public class TicketActivity extends Activity implements IFragmentCallbacks {
     @Override
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
         if (item.getItemId() == R.id.action_save) {
+
             if (mTrafficTicket.isValid()) {
                 Intent intent = SummaryActivity.getIntent(this);
                 intent.putExtra(TrafficTicket.TICKET_KEY, mTrafficTicket);

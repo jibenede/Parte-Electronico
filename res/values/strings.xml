@@ -27,4 +27,6 @@
     <string name="print">Imprimir</string>
     <string name="queue">Encolar</string>
     <string name="description">Descripción</string>
+    <string name="invalid_violation">Infracción Inválida!</string>
+    <string name="select_violation">Seleccione una Infracción</string>
 </resources>
