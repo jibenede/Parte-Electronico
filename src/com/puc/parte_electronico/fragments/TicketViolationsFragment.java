@@ -23,6 +23,8 @@ public class TicketViolationsFragment extends Fragment implements ITicketFragmen
     public static final String EDITABLE_KEY = "EDITABLE_KEY";
     private String[] mTrafficViolationList;
 
+    private ViewGroup mContainerView;
+
     /**
      * A list of the traffic violations defined by this ticket.
      */
@@ -49,6 +51,7 @@ public class TicketViolationsFragment extends Fragment implements ITicketFragmen
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_ticket_violations, container, false);
 
+        mContainerView = (ViewGroup) view.findViewById(R.id.traffic_violation_container);
         mTrafficViolationList = getActivity().getResources().getStringArray(R.array.traffic_violations);
 
         for (TrafficViolation violation : mTicket.getViolations()) {
@@ -64,6 +67,9 @@ public class TicketViolationsFragment extends Fragment implements ITicketFragmen
                 addTrafficViolationView(getView(), getActivity().getLayoutInflater(), violation);
             }
         });
+        if (!mEditable) {
+            addViolationButton.setVisibility(View.GONE);
+        }
 
         return view;
     }
@@ -105,8 +111,7 @@ public class TicketViolationsFragment extends Fragment implements ITicketFragmen
         View trafficViolationItem = inflater.inflate(R.layout.item_traffic_violation, null);
         configureTrafficViolationItem(trafficViolationItem, violation);
 
-        LinearLayout layout = (LinearLayout)rootView.findViewById(R.id.traffic_violation_container);
-        layout.addView(trafficViolationItem);
+        mContainerView.addView(trafficViolationItem);
     }
 
     // static int id = 10000000;
@@ -117,6 +122,7 @@ public class TicketViolationsFragment extends Fragment implements ITicketFragmen
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
                 R.layout.autocomplete_traffic_violation, R.id.suggestion, mTrafficViolationList);
         autoCompleteTextView.setAdapter(adapter);
+        autoCompleteTextView.setEnabled(mEditable);
 
         autoCompleteTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -159,6 +165,19 @@ public class TicketViolationsFragment extends Fragment implements ITicketFragmen
                 dialog.show();
             }
         });
+        button.setEnabled(mEditable);
+
+        Button deleteViolationButton = (Button) view.findViewById(R.id.button_delete_violation);
+        deleteViolationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mTicket.getViolations().size() > 1) {
+                    mTicket.getViolations().remove(violation);
+                    mContainerView.removeView(view);
+                }
+            }
+        });
+        deleteViolationButton.setEnabled(mEditable);
 
     }
 

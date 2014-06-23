@@ -4,24 +4,24 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Fragment;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.puc.parte_electronico.NavigationActivity;
 import com.puc.parte_electronico.R;
 import com.puc.parte_electronico.globals.Settings;
 import com.puc.parte_electronico.model.Database;
+import com.puc.parte_electronico.model.Parameter;
 import com.puc.parte_electronico.model.User;
+import com.puc.parte_electronico.network.Connector;
 
 /**
  * Created by jose on 5/13/14.
@@ -53,18 +53,6 @@ public class LoginFragment extends Fragment {
 
         mEmailView = (EditText) view.findViewById(R.id.email);
         mPasswordView = (EditText) view.findViewById(R.id.password);
-        mPasswordView
-                .setOnEditorActionListener(new TextView.OnEditorActionListener() {
-                    @Override
-                    public boolean onEditorAction(TextView textView, int id,
-                                                  KeyEvent keyEvent) {
-                        if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                            attemptLogin();
-                            return true;
-                        }
-                        return false;
-                    }
-                });
         mPinView = (EditText) view.findViewById(R.id.pin);
 
         mLoginFormView = view.findViewById(R.id.login_form);
@@ -75,7 +63,13 @@ public class LoginFragment extends Fragment {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                attemptLogin();
+                String pin = mPinView.getText().toString();
+                if (openDataBase(pin)) {
+                    attemptLogin();
+                } else {
+                    Toast.makeText(getActivity(), getString(R.string.wrong_pin_error), Toast.LENGTH_LONG).show();
+                }
+
             }
         });
         return view;
@@ -88,16 +82,19 @@ public class LoginFragment extends Fragment {
 
     }
 
-    private Database openDataBase() {
+    private boolean openDataBase(String pin) {
 
         // Temporary dummy login logic for testing purposes. Delete when done.
         try {
-            Database database = new Database(getActivity(), "1234");
-            return database;
+            Settings settings = Settings.getSettings();
+            if (settings.getDatabase() == null) {
+                Database database = new Database(getActivity(), pin);
+                settings.setDatabase(database);
+            }
+            return true;
         } catch (Database.WrongEncryptionPasswordException e) {
-
+            return false;
         }
-        return null;
     }
 
     /**
@@ -209,25 +206,61 @@ public class LoginFragment extends Fragment {
      * the user.
      */
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+        private boolean mError;
+        private String mErrorDescription;
         @Override
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
 
-            try {
-                // Try to validate from the local Database.
-                Settings settings = Settings.getSettings();
-                Database database = openDataBase();
-                User dummyUser = User.getUser(database, mEmail, mPassword);
-                // TODO: Try to validate from web app
-                if (dummyUser == null) {
-                    Thread.sleep(2000);
-                }
-                settings.setDatabase(database);
-                settings.setCurrentUser(dummyUser);
 
-                startActivity(NavigationActivity.getIntent(getActivity()));
-            } catch (InterruptedException e) {
-                return false;
+            // Try to validate from the local Database.
+            Settings settings = Settings.getSettings();
+            Database database = settings.getDatabase();
+
+            // First we check if the user is stored locally
+            User user = User.getUser(database, mEmail, mPassword);
+
+            // If it is not, we try to login to the server
+            if (user == null) {
+                Connector.LoginResponse loginResponse = Connector.sendLoginCredentials(mEmail, mPassword);
+                if (loginResponse != null) {
+                    if (loginResponse.isAuthenticated()) {
+                        // We get an updated list of users and update the database
+                        User[] users = Connector.sendUsersRequest(loginResponse.getAccessToken());
+                        if (users == null) {
+                            mError = true;
+                            mErrorDescription = getActivity().getString(R.string.login_connection_error);
+                        } else {
+                            User.deleteUsers(database);
+                            for (User u : users) {
+                                u.insert(database);
+                            }
+
+                            user = User.getUser(database, mEmail, mPassword);
+
+                            Parameter accessToken = Parameter.getParameter(database, Parameter.PARAMETER_ACCESS_TOKEN);
+                            if (accessToken == null) {
+                                accessToken = new Parameter(Parameter.PARAMETER_ACCESS_TOKEN, loginResponse.getAccessToken());
+                                accessToken.insert(database);
+                            } else {
+                                accessToken.setValue(loginResponse.getAccessToken());
+                                accessToken.update(database);
+                            }
+                            settings.setAccessToken(accessToken.getValue());
+                        }
+                    } else {
+                        mError = true;
+                        mErrorDescription = getActivity().getString(R.string.login_wrong_username_password);
+                    }
+                } else {
+                    mError = true;
+                    mErrorDescription = getActivity().getString(R.string.login_connection_error);
+                }
+
+            }
+
+            if (user != null) {
+                settings.setCurrentUser(user);
             }
 
             return true;
@@ -238,12 +271,10 @@ public class LoginFragment extends Fragment {
             mAuthTask = null;
             showProgress(false);
 
-            if (success) {
-                Intent intent = new Intent(getActivity(), NavigationActivity.class);
+            if (!mError) {
+                startActivity(NavigationActivity.getIntent(getActivity()));
             } else {
-                mPasswordView
-                        .setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
+                Toast.makeText(getActivity(), mErrorDescription, Toast.LENGTH_LONG).show();
             }
         }
 

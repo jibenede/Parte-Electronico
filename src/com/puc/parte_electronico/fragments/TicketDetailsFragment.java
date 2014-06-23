@@ -1,6 +1,7 @@
 package com.puc.parte_electronico.fragments;
 
 import android.app.Fragment;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.KeyEvent;
@@ -10,18 +11,24 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.puc.parte_electronico.R;
+import com.puc.parte_electronico.TicketActivity;
 import com.puc.parte_electronico.model.TrafficTicket;
+import com.puc.parte_electronico.model.Validator;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Created by jose on 5/19/14.
  */
 public class TicketDetailsFragment extends Fragment implements ITicketFragment {
+
+
     public static final String TAG = "TICKET_DETAILS_FRAGMENT";
     private final int[] RUT_MULTIPLIER = new int[] { 2, 3, 4, 5, 6, 7 };
 
     private TrafficTicket mTicket;
+    private boolean mEditable;
 
     private EditText mEditRut;
     private EditText mEditVerifierDigit;
@@ -31,6 +38,9 @@ public class TicketDetailsFragment extends Fragment implements ITicketFragment {
     private EditText mEditVehicle;
     private EditText mEditLicensePlate;
     private EditText mEditDescription;
+    private EditText mEditLocation;
+    private EditText mEditMail;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -38,6 +48,7 @@ public class TicketDetailsFragment extends Fragment implements ITicketFragment {
         Bundle arguments = getArguments();
         if (arguments != null) {
             mTicket = arguments.getParcelable(TrafficTicket.TICKET_KEY);
+            mEditable = arguments.getBoolean(TicketActivity.EDITABLE_KEY);
         }
     }
 
@@ -47,7 +58,7 @@ public class TicketDetailsFragment extends Fragment implements ITicketFragment {
         View view = inflater.inflate(R.layout.fragment_ticket_details, container, false);
 
         mEditRut = (EditText)view.findViewById(R.id.edit_rut);
-        setEditorListener(mEditRut, new OnEditorFinishedListener() {
+        configureEditor(mEditRut, new OnEditorFinishedListener() {
             @Override
             public void execute() {
                 parseRut(mEditRut);
@@ -57,7 +68,7 @@ public class TicketDetailsFragment extends Fragment implements ITicketFragment {
         mEditVerifierDigit = (EditText)view.findViewById(R.id.edit_verifier);
 
         mEditFirstName = (EditText)view.findViewById(R.id.edit_first_name);
-        setEditorListener(mEditFirstName, new OnEditorFinishedListener() {
+        configureEditor(mEditFirstName, new OnEditorFinishedListener() {
             @Override
             public void execute() {
                 mTicket.setFirstName(mEditFirstName.getText().toString());
@@ -65,7 +76,7 @@ public class TicketDetailsFragment extends Fragment implements ITicketFragment {
         });
 
         mEditLastName = (EditText)view.findViewById(R.id.edit_last_name);
-        setEditorListener(mEditLastName, new OnEditorFinishedListener() {
+        configureEditor(mEditLastName, new OnEditorFinishedListener() {
             @Override
             public void execute() {
                 mTicket.setLastName(mEditLastName.getText().toString());
@@ -74,7 +85,7 @@ public class TicketDetailsFragment extends Fragment implements ITicketFragment {
 
 
         mEditAddress = (EditText)view.findViewById(R.id.edit_address);
-        setEditorListener(mEditAddress, new OnEditorFinishedListener() {
+        configureEditor(mEditAddress, new OnEditorFinishedListener() {
             @Override
             public void execute() {
                 mTicket.setAddress(mEditAddress.getText().toString());
@@ -82,7 +93,7 @@ public class TicketDetailsFragment extends Fragment implements ITicketFragment {
         });
 
         mEditVehicle = (EditText)view.findViewById(R.id.edit_vehicle);
-        setEditorListener(mEditVehicle, new OnEditorFinishedListener() {
+        configureEditor(mEditVehicle, new OnEditorFinishedListener() {
             @Override
             public void execute() {
                 mTicket.setVehicle(mEditVehicle.getText().toString());
@@ -90,10 +101,17 @@ public class TicketDetailsFragment extends Fragment implements ITicketFragment {
         });
 
         mEditLicensePlate = (EditText)view.findViewById(R.id.edit_license_plate);
-        setEditorListener(mEditLicensePlate, new OnEditorFinishedListener() {
+        configureEditor(mEditLicensePlate, new OnEditorFinishedListener() {
             @Override
             public void execute() {
                 mTicket.setLicensePlate(mEditLicensePlate.getText().toString());
+
+                Validator<TrafficTicket> validator = TrafficTicket.sValidators.get("License Plate");
+                if (!validator.validate(mTicket)) {
+                    Toast.makeText(getActivity(), validator.getErrorMessage(getActivity()), Toast.LENGTH_LONG).show();
+                    mTicket.setLicensePlate("");
+                    mEditLicensePlate.setText("");
+                }
             }
         });
 
@@ -103,10 +121,26 @@ public class TicketDetailsFragment extends Fragment implements ITicketFragment {
         mEditDescription.setLines(6);
         mEditDescription.setHorizontallyScrolling(false);
         mEditDescription.setImeOptions(EditorInfo.IME_ACTION_DONE);
-        setEditorListener(mEditDescription, new OnEditorFinishedListener() {
+        configureEditor(mEditDescription, new OnEditorFinishedListener() {
             @Override
             public void execute() {
                 mTicket.setDescription(mEditDescription.getText().toString());
+            }
+        });
+
+        mEditLocation = (EditText)view.findViewById(R.id.edit_location);
+        configureEditor(mEditLocation, new OnEditorFinishedListener() {
+            @Override
+            public void execute() {
+                mTicket.setLocation(mEditLocation.getText().toString());
+            }
+        });
+
+        mEditMail = (EditText)view.findViewById(R.id.edit_email);
+        configureEditor(mEditMail, new OnEditorFinishedListener() {
+            @Override
+            public void execute() {
+                mTicket.setEmail(mEditMail.getText().toString());
             }
         });
 
@@ -140,6 +174,9 @@ public class TicketDetailsFragment extends Fragment implements ITicketFragment {
         mEditAddress.setText(mTicket.getAddress());
         mEditVehicle.setText(mTicket.getVehicle());
         mEditLicensePlate.setText(mTicket.getLicensePlate());
+        mEditMail.setText(mTicket.getEmail());
+        mEditLocation.setText(mTicket.getLocation());
+        mEditDescription.setText(mTicket.getDescription());
     }
 
     private void parseRut(TextView v) {
@@ -178,13 +215,16 @@ public class TicketDetailsFragment extends Fragment implements ITicketFragment {
 
     }
 
-    private void setEditorListener(EditText editText, OnEditorFinishedListener listener) {
+    private void configureEditor(EditText editText, OnEditorFinishedListener listener) {
+        editText.setEnabled(mEditable);
+        if (!mEditable) {
+            editText.setTextColor(Color.WHITE);
+        }
         editText.setOnEditorActionListener(listener);
         editText.setOnFocusChangeListener(listener);
     }
 
     static abstract class OnEditorFinishedListener implements TextView.OnEditorActionListener, View.OnFocusChangeListener {
-
         @Override
         public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
             if (actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_DONE) {

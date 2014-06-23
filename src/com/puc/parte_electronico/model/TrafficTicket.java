@@ -6,15 +6,20 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.widget.CursorAdapter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.puc.parte_electronico.R;
 import com.puc.parte_electronico.adapters.TicketListAdapter;
 import com.puc.parte_electronico.globals.Settings;
+import com.puc.parte_electronico.uploader.Uploader;
 import net.sqlcipher.database.SQLiteDatabase;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by jose on 5/13/14.
@@ -22,7 +27,12 @@ import java.util.List;
 public class TrafficTicket implements Parcelable {
     public static final String TICKET_KEY = "TICKET_KEY";
 
+    private static final String LICENSE_PLATE_REGEX = "^[a-z]{2}[0-9]{2}[0-9]{2}|" +
+            "[b-d,f-h,j-l,p,r-t,v-z]{2}[b-d,f-h,j-l,p,r-t,v-z]{2}[0-9]{2}$";
+    private static Pattern sLicensePlatePattern;
+
     private static long sLastInsertTime;
+    public static Map<String, Validator> sValidators;
 
     private int mId;
     private int mUserId;
@@ -38,16 +48,179 @@ public class TrafficTicket implements Parcelable {
     private String mAddress;
     private String mVehicle;
     private String mLicensePlate;
+    private String mEmail;
 
-    private String mDescription;
+    @Nullable private String mDescription;
     private String mLocation;
 
-    private ArrayList<TrafficViolation> mViolations;
-    private ArrayList<Picture> mPictures;
+    private List<TrafficViolation> mViolations;
+    private List<Picture> mPictures;
+
+    @JsonIgnore
+    private Uploader.UploadState mState;
+    @JsonIgnore
+    private String mZipPath;
+
+    // Database querying operations
+
+    public static TicketListAdapter getAdapter(Context context) {
+        Settings settings = Settings.getSettings();
+        SQLiteDatabase database = settings.getDatabase().getDatabase();
+        Cursor cursor = database.query("ticket", null, null, null, null, null, null);
+        return new TicketListAdapter(context, cursor, 0);
+    }
+
+    public static long getTimeOfLastInsert() {
+        return sLastInsertTime;
+    }
+
+    @Nullable
+    public static TrafficTicket getPendingTicket(Database db) {
+        SQLiteDatabase database = db.getDatabase();
+        Cursor cursor = database.query("ticket", null, "upload_state = ? OR upload_state = ?",
+                new String[] {"" + Uploader.UploadState.PENDING.ordinal(), "" + Uploader.UploadState.UPLOADING.ordinal() },
+                null, null, "upload_state DESC", "1");
+        TrafficTicket ticket = null;
+        if(cursor.moveToFirst()) {
+            ticket = new TrafficTicket(cursor);
+        }
+        cursor.close();
+        return ticket;
+    }
+
+    // Validators
+
+    static {
+        sLicensePlatePattern = Pattern.compile(LICENSE_PLATE_REGEX, Pattern.CASE_INSENSITIVE);
+
+        sValidators = new HashMap<String, Validator>();
+        sValidators.put("First Name", new Validator<TrafficTicket>() {
+            @Override
+            public String getErrorMessage(Context context) {
+                return context.getString(R.string.ticket_error_first_name_required);
+            }
+
+            @Override
+            public boolean validate(TrafficTicket ticket) {
+                return ticket.mFirstName != null && ticket.mFirstName.length() > 0;
+            }
+        });
+
+        sValidators.put("Last Name", new Validator<TrafficTicket>() {
+            @Override
+            public String getErrorMessage(Context context) {
+                return context.getString(R.string.ticket_error_last_name_required);
+            }
+
+            @Override
+            public boolean validate(TrafficTicket ticket) {
+                return ticket.mLastName != null && ticket.mLastName.length() > 0;
+            }
+        });
+
+        sValidators.put("Violation", new Validator<TrafficTicket>() {
+            @Override
+            public String getErrorMessage(Context context) {
+                return context.getString(R.string.ticket_error_violation_unspecified);
+            }
+
+            @Override
+            public boolean validate(TrafficTicket ticket) {
+                for (TrafficViolation violation : ticket.mViolations) {
+                    if (!violation.isValid()) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        });
+
+        sValidators.put("RUT", new Validator<TrafficTicket>() {
+            @Override
+            public String getErrorMessage(Context context) {
+                return context.getString(R.string.ticket_error_rut_required);
+            }
+
+            @Override
+            public boolean validate(TrafficTicket ticket) {
+                return ticket.mRut != null;
+            }
+        });
+
+        sValidators.put("Address", new Validator<TrafficTicket>() {
+            @Override
+            public String getErrorMessage(Context context) {
+                return context.getString(R.string.ticket_error_address_required);
+            }
+
+            @Override
+            public boolean validate(TrafficTicket ticket) {
+                return ticket.mAddress != null && ticket.mAddress.length() > 0;
+            }
+        });
+
+        sValidators.put("Vehicle", new Validator<TrafficTicket>() {
+            @Override
+            public String getErrorMessage(Context context) {
+                return context.getString(R.string.ticket_error_vehicle_required);
+            }
+
+            @Override
+            public boolean validate(TrafficTicket ticket) {
+                return ticket.mVehicle != null && ticket.mVehicle.length() > 0;
+            }
+        });
+
+        sValidators.put("License Plate", new Validator<TrafficTicket>() {
+            private int mError;
+
+            @Override
+            public String getErrorMessage(Context context) {
+                if (mError == 1) {
+                    return context.getString(R.string.ticket_error_license_plate_required);
+                } else if (mError == 2) {
+                    return context.getString(R.string.ticket_error_wrong_license_plate_format);
+                } else {
+                    return "";
+                }
+            }
+
+            @Override
+            public boolean validate(TrafficTicket ticket) {
+                if (!(ticket.mLicensePlate != null && ticket.mLicensePlate.length() > 0)) {
+                    mError = 1;
+                    return false;
+                }
+
+                Matcher matcher = sLicensePlatePattern.matcher(ticket.mLicensePlate);
+                if (!matcher.find()) {
+                    mError = 2;
+                    return false;
+                }
+                return true;
+            }
+        });
+
+        sValidators.put("Location", new Validator<TrafficTicket>() {
+
+            @Override
+            public String getErrorMessage(Context context) {
+                return context.getString(R.string.ticket_error_location_required);
+            }
+
+            @Override
+            public boolean validate(TrafficTicket ticket) {
+                return ticket.mLocation != null && ticket.mLocation.length() > 0;
+            }
+        });
+    }
+
+    // Object definition
 
     public TrafficTicket(User user) {
         mUserId = user.getId();
         mDate = new Date().getTime();
+        mState = Uploader.UploadState.PENDING;
 
         mViolations = new ArrayList<TrafficViolation>();
         mPictures = new ArrayList<Picture>();
@@ -91,6 +264,10 @@ public class TrafficTicket implements Parcelable {
 
         mDescription = in.readString();
         mLocation = in.readString();
+        mEmail = in.readString();
+
+        mState = Uploader.UploadState.values()[in.readInt()];
+        mZipPath = in.readString();
 
         mViolations = in.readArrayList(TrafficViolation.class.getClassLoader());
         mPictures = in.readArrayList(Picture.class.getClassLoader());
@@ -113,11 +290,20 @@ public class TrafficTicket implements Parcelable {
 
         mDescription = cursor.getString(cursor.getColumnIndex("description"));
         mLocation = cursor.getString(cursor.getColumnIndex("location"));
+        mEmail = cursor.getString(cursor.getColumnIndex("email"));
+
+        mState = Uploader.UploadState.values()[cursor.getInt(cursor.getColumnIndex("upload_state"))];
+        mZipPath = cursor.getString(cursor.getColumnIndex("zip_path"));
     }
 
-    public boolean isValid() {
-        // TODO: implement
-        return true;
+    @Nullable
+    public String isValid(Context context) {
+        for (Validator<TrafficTicket> validator : sValidators.values()) {
+            if (!validator.validate(this)) {
+                return validator.getErrorMessage(context);
+            }
+        }
+        return null;
     }
 
     public Integer getLicenseCode() {
@@ -189,11 +375,23 @@ public class TrafficTicket implements Parcelable {
     }
 
     public void setLicensePlate(String licensePlate) {
-        mLicensePlate = licensePlate;
+        mLicensePlate = licensePlate.toUpperCase();
     }
 
-    public List<Picture> getPictures() {
-        return mPictures;
+    public String getEmail() {
+        return mEmail;
+    }
+
+    public void setEmail(String email) {
+        mEmail = email;
+    }
+
+    public String getLocation() {
+        return mLocation;
+    }
+
+    public void setLocation(String location) {
+        mLocation = location;
     }
 
     public String getDescription() {
@@ -204,27 +402,27 @@ public class TrafficTicket implements Parcelable {
         mDescription = description;
     }
 
+    public List<Picture> getPictures() {
+        if (mPictures == null) {
+            mPictures = Picture.getPicturesOfTicket(Settings.getSettings().getDatabase(), mId);
+        }
+        return mPictures;
+    }
+
     public void addPicture(Picture picture) {
         mPictures.add(picture);
     }
 
     public List<TrafficViolation> getViolations() {
+        // Lazy loading of associated objects
+        if (mViolations == null) {
+            mViolations = TrafficViolation.getViolationsOfTicket(Settings.getSettings().getDatabase(), mId);
+        }
         return mViolations;
     }
 
     public void addTrafficViolation(TrafficViolation violation) {
         mViolations.add(violation);
-    }
-
-    public static CursorAdapter getAdapter(Context context) {
-        Settings settings = Settings.getSettings();
-        SQLiteDatabase database = settings.getDatabase().getDatabase();
-        Cursor cursor = database.query("ticket", null, null, null, null, null, null);
-        return new TicketListAdapter(context, cursor, 0);
-    }
-
-    public static long getTimeOfLastInsert() {
-        return sLastInsertTime;
     }
 
     public int getId() {
@@ -235,14 +433,49 @@ public class TrafficTicket implements Parcelable {
         return new Date(mDate);
     }
 
+    @JsonIgnore
+    public Uploader.UploadState getState() {
+        return mState;
+    }
+
+    public void setState(Uploader.UploadState state) {
+        mState = state;
+    }
+
+    @JsonIgnore
+    public String getZipPath() {
+        return mZipPath;
+    }
+
+    public void setZipPath(String path) {
+        mZipPath = path;
+    }
+
     public void insert() {
         Settings settings = Settings.getSettings();
         SQLiteDatabase database = settings.getDatabase().getDatabase();
-        database.insertOrThrow("ticket", null, getContentValues());
+
+        long id = database.insertOrThrow("ticket", null, getContentValues());
+        for (TrafficViolation violation : mViolations) {
+            violation.insert((int)id);
+        }
+
+        for (Picture picture : mPictures) {
+            picture.insert((int)id);
+        }
 
         sLastInsertTime = System.currentTimeMillis();
     }
 
+    public void update() {
+        Settings settings = Settings.getSettings();
+        SQLiteDatabase database = settings.getDatabase().getDatabase();
+
+        database.update("ticket", getContentValues(), "_id = ?", new String[] { "" + mId });
+    }
+
+
+    @JsonIgnore
     public String getPrinterStringSummary() {
         // TODO: finish formatting string
         User user = User.getUser(Settings.getSettings().getDatabase(), mUserId);
@@ -253,6 +486,9 @@ public class TrafficTicket implements Parcelable {
         buffer.append("Appellido: " + mLastName + "\n");
         buffer.append("Cédula de Identidad: " + mRut + "\n");
         buffer.append("Domicilio: " + mAddress + "\n");
+        if (mEmail != null && mEmail.length() > 0) {
+            buffer.append("E-Mail: " + mEmail + "\n");
+        }
         buffer.append("\n");
 
         // Dummy data for time of citation
@@ -273,7 +509,11 @@ public class TrafficTicket implements Parcelable {
         buffer.append("\n");
 
         buffer.append("Observaciones generales:\n");
-        buffer.append(mDescription + "\n\n");
+        if (mDescription != null) {
+            buffer.append(mDescription + "\n\n");
+        } else {
+            buffer.append("---\n\n");
+        }
 
         buffer.append(String.format("Cometidas en: %1$s a las %2$tH:%2$tM\n\n", mLocation, new Date(mDate)));
 
@@ -303,7 +543,15 @@ public class TrafficTicket implements Parcelable {
         cv.put("license_plate", mLicensePlate);
         cv.put("description", mDescription);
         cv.put("location", mLocation);
+        cv.put("email", mEmail);
+        cv.put("upload_state", mState.ordinal());
+        cv.put("zip_path", mZipPath);
         return cv;
+    }
+
+    public void dumpJsonToStream(OutputStream stream) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writeValue(stream, this);
     }
 
     // Parcelable interface
@@ -358,6 +606,10 @@ public class TrafficTicket implements Parcelable {
 
         out.writeString(mDescription);
         out.writeString(mLocation);
+        out.writeString(mEmail);
+
+        out.writeInt(mState.ordinal());
+        out.writeString(mZipPath);
 
         out.writeList(mViolations);
         out.writeList(mPictures);

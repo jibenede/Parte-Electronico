@@ -55,13 +55,15 @@ public class Database {
 
         mDatabase.execSQL("create table ticket (_id INTEGER PRIMARY KEY, " +
                 "user_id REFERENCES user(_id) ON DELETE RESTRICT, license_code, date NOT NULL, latitude, longitude, " +
-                "rut, first_name, last_name, address, vehicle, license_plate);");
+                "rut, first_name, last_name, address, vehicle, license_plate, email, location, description, " +
+                "upload_state, zip_path);");
         mDatabase.execSQL("create table violation (_id INTEGER PRIMARY KEY, " +
                 "ticket_id REFERENCES ticket(_id) ON DELETE CASCADE, type, cost);");
         mDatabase.execSQL("create table picture (_id INTEGER PRIMARY KEY, " +
                 "ticket_id REFERENCES ticket(_id) ON DELETE CASCADE, path, type);");
         mDatabase.execSQL("create table user (_id INTEGER PRIMARY KEY, username, password, first_name, last_name, " +
                 "precinct, courthouse_number, courthouse_city, plaque, rank);");
+        mDatabase.execSQL("create table parameter(_id INTEGER PRIMARY KEY, key, value);");
 
         // TODO: default user for testing purposes only, delete on final release
         ContentValues cv = new ContentValues();

@@ -7,7 +7,7 @@
     <string name="login">Login</string>
     <string name="add_new_ticket">Add New Ticket</string>
     <string name="add_traffic_violation">Add Traffic Violation</string>
-    <string name="select_traffic_violation">---Select Traffic Violation---</string>
+    <string name="select_traffic_violation">Select Traffic Violation</string>
     <string name="traffic_ticket_description">Ticket %1$d: %2$tB %2$td, %2$tH:%2$tM:%2$tS</string>
     <string name="save">Save</string>
     <string name="first_name">First Name</string>
@@ -27,6 +27,27 @@
     <string name="print">Print</string>
     <string name="queue">Queue</string>
     <string name="description">Description</string>
+    <string name="location">Location</string>
     <string name="invalid_violation">Invalid Traffic Violation!</string>
     <string name="select_violation">Select a Traffic Violation</string>
+    <string name="email">E-Mail (Optional)</string>
+
+    <string name="wrong_pin_error">Invalid database PIN</string>
+    <string name="upload_state_pending">Pending</string>
+    <string name="upload_state_done">Done</string>
+    <string name="upload_state_uploading">Uploading</string>
+    <string name="upload_state_error">Error</string>
+
+    <string name="login_wrong_username_password">Incorrect username or password</string>
+    <string name="login_connection_error">Internet connection error</string>
+
+    <string name="ticket_error_first_name_required">Offender\'s first name required</string>
+    <string name="ticket_error_last_name_required">Offender\'s last name required</string>
+    <string name="ticket_error_address_required">Offender\'s address required</string>
+    <string name="ticket_error_rut_required">Offender\'s ID required</string>
+    <string name="ticket_error_vehicle_required">Offender\'s vehicle required</string>
+    <string name="ticket_error_license_plate_required">Offender\'s license plate required</string>
+    <string name="ticket_error_violation_unspecified">Offender\'s violation unspecified</string>
+    <string name="ticket_error_location_required">Offender\'s location where violation took place required</string>
+    <string name="ticket_error_wrong_license_plate_format">License plate invalid: put all characters next to each other, without spaces, stops or dashes</string>
 </resources>

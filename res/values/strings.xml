@@ -7,7 +7,7 @@
     <string name="login">Ingresar</string>
     <string name="add_new_ticket">Añadir nuevo parte</string>
     <string name="add_traffic_violation">Agregar Infracción</string>
-    <string name="select_traffic_violation">---Seleccione Infracción---</string>
+    <string name="select_traffic_violation">Seleccione Infracción</string>
     <string name="traffic_ticket_description">Parte %1$d: %2$td de %2$tB, %2$tH:%2$tM:%2$tS</string>
     <string name="save">Guardar</string>
     <string name="first_name">Nombre</string>
@@ -27,6 +27,28 @@
     <string name="print">Imprimir</string>
     <string name="queue">Encolar</string>
     <string name="description">Descripción</string>
+    <string name="location">Ubicación</string>
     <string name="invalid_violation">Infracción Inválida!</string>
     <string name="select_violation">Seleccione una Infracción</string>
+    <string name="email">E-Mail (opcional)</string>
+
+    <string name="wrong_pin_error">PIN de base de datos inválido</string>
+    <string name="upload_state_pending">Pendiente</string>
+    <string name="upload_state_done">Subido</string>
+    <string name="upload_state_uploading">Cargando</string>
+    <string name="upload_state_error">Error</string>
+
+    <string name="login_wrong_username_password">Nombre de usuario o contraseña incorrectos</string>
+    <string name="login_connection_error">Error de conexión a Internet</string>
+
+
+    <string name="ticket_error_first_name_required">Falta el nombre del infractor</string>
+    <string name="ticket_error_last_name_required">Falta el apellido del infractor</string>
+    <string name="ticket_error_address_required">Falta la dirección del infractor</string>
+    <string name="ticket_error_rut_required">Falta el RUT del infractor</string>
+    <string name="ticket_error_vehicle_required">Falta el tipo de vehículo del infractor</string>
+    <string name="ticket_error_license_plate_required">Falta la patente del infractor</string>
+    <string name="ticket_error_violation_unspecified">Debe especificar el tipo de infracción cometida</string>
+    <string name="ticket_error_location_required">Debe especificar la ubicación de donde se cometió la infracción</string>
+    <string name="ticket_error_wrong_license_plate_format">Formato de patente inválido: coloque todos los caracteres juntos, sin espacio, punto o guión</string>
 </resources>

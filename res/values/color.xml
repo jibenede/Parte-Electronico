@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background">#e5e5e5</color>
+    <color name="hint_color">#5C5C5C</color>
+    <color name="label_color">#000000</color>
+    <color name="listview_row_odd">#e7e1ca</color>
+    <color name="listview_row_even">#e5e4df</color>
+</resources>

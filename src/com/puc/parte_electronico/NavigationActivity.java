@@ -24,6 +24,17 @@ public class NavigationActivity extends Activity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        // TODO: uncomment when server becomes available
+        /*
+        Intent intent = Uploader.getIntent(this);
+        startService(intent);
+        */
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
@@ -34,7 +45,7 @@ public class NavigationActivity extends Activity {
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
         if (featureId == 0) {
             Intent intent = TicketActivity.getIntent(this);
-            intent.putExtra("editable", true);
+            intent.putExtra(TicketActivity.EDITABLE_KEY, true);
             startActivity(intent);
             return true;
         }

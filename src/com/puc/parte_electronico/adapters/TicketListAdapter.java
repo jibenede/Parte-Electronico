@@ -19,6 +19,7 @@ public class TicketListAdapter extends CursorAdapter {
 
     public TicketListAdapter(Context context, Cursor c, int flags) {
         super(context, c, flags);
+
         FORMAT = context.getString(R.string.traffic_ticket_description);
     }
 
@@ -35,5 +36,21 @@ public class TicketListAdapter extends CursorAdapter {
         TextView label = (TextView) view.findViewById(R.id.text);
         TrafficTicket ticket = new TrafficTicket(cursor);
         label.setText(String.format(FORMAT, ticket.getId(), ticket.getDate()));
+
+        TextView status = (TextView) view.findViewById(R.id.status);
+        status.setText(ticket.getState().getLabel(context));
+
+        if (cursor.getPosition() % 2 == 0) {
+            view.setBackgroundColor(context.getResources().getColor(R.color.listview_row_even));
+        } else {
+            view.setBackgroundColor(context.getResources().getColor(R.color.listview_row_odd));
+        }
+    }
+
+    public TrafficTicket getTicket(int position) {
+        Cursor cursor = getCursor();
+        cursor.moveToPosition(position);
+        TrafficTicket ticket = new TrafficTicket(cursor);
+        return ticket;
     }
 }

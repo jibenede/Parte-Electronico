@@ -24,6 +24,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import com.puc.parte_electronico.R;
+import com.puc.parte_electronico.TicketActivity;
 import com.puc.parte_electronico.globals.ImageTransform;
 import com.puc.parte_electronico.model.Picture;
 import com.puc.parte_electronico.model.TrafficTicket;
@@ -52,6 +53,8 @@ public class TicketPicturesFragment extends Fragment implements ITicketFragment 
 
     private TrafficTicket mTicket;
 
+    private boolean mEditable;
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -60,6 +63,7 @@ public class TicketPicturesFragment extends Fragment implements ITicketFragment 
         Bundle arguments = getArguments();
         if (arguments != null) {
             mTicket = arguments.getParcelable(TrafficTicket.TICKET_KEY);
+            mEditable = arguments.getBoolean(TicketActivity.EDITABLE_KEY);
         }
     }
 
@@ -74,6 +78,7 @@ public class TicketPicturesFragment extends Fragment implements ITicketFragment 
                 takePicture(BACKGROUND_CAMERA_CODE);
             }
         });
+        button.setEnabled(mEditable);
 
         button = (Button)view.findViewById(R.id.button_add_evidence);
         button.setOnClickListener(new View.OnClickListener() {
@@ -82,6 +87,7 @@ public class TicketPicturesFragment extends Fragment implements ITicketFragment 
                 takePicture(EVIDENCE_CAMERA_CODE);
             }
         });
+        button.setEnabled(mEditable);
 
         mBackgroundPicturesContainer = (ViewGroup)view.findViewById(R.id.background_container);
         mEvidencePicturesContainer = (ViewGroup)view.findViewById(R.id.evidence_container);

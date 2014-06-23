@@ -11,6 +11,7 @@ public class Settings {
 
     private Database mDatabase;
     private User mCurrentUser;
+    private String mAccessToken;
 
     public static Settings getSettings() {
         if (sSingleton == null) {
@@ -20,20 +21,30 @@ public class Settings {
         return sSingleton;
     }
 
+    public Database getDatabase() {
+        return mDatabase;
+    }
+
     public void setDatabase(Database database) {
         mDatabase = database;
     }
 
-    public Database getDatabase() {
-        return mDatabase;
+    public User getCurrentUser() {
+        return mCurrentUser;
     }
 
     public void setCurrentUser(User user) {
         mCurrentUser = user;
     }
 
-    public User getCurrentUser() {
-        return mCurrentUser;
+    public String getAccessToken() {
+        return mAccessToken;
     }
+
+    public void setAccessToken(String token) {
+        mAccessToken = token;
+    }
+
+
 
 }

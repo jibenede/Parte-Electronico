@@ -9,13 +9,13 @@ import java.security.NoSuchAlgorithmException;
 public class CryptoUtilities {
 
     /**
-     * Computes a SHA 256 hash for a given string.
+     * Computes a SHA-1 hash for a given string.
      * @param password The string to hash.
-     * @return A 256 SHA 256 of the given string.
+     * @return A SHA-1 of the given string.
      */
     public static String hash(String password) {
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            MessageDigest digest = MessageDigest.getInstance("SHA-1");
             digest.update(password.getBytes());
             byte[] bytes = digest.digest();
 
