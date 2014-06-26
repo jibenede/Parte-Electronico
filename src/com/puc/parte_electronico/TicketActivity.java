@@ -7,10 +7,7 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
+import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -64,6 +61,10 @@ public class TicketActivity extends Activity implements IFragmentCallbacks {
             mTrafficTicket = savedInstanceState.getParcelable(TrafficTicket.TICKET_KEY);
             mFocusedTabPosition = savedInstanceState.getInt(FOCUSED_FRAGMENT_KEY, 0);
             mEditable = savedInstanceState.getBoolean(EDITABLE_KEY);
+        }
+
+        if (!mEditable) {
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         }
 
         ActionBar actionBar = getActionBar();
@@ -129,6 +130,7 @@ public class TicketActivity extends Activity implements IFragmentCallbacks {
         outState.putBoolean(EDITABLE_KEY, mEditable);
     }
 
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
@@ -141,7 +143,6 @@ public class TicketActivity extends Activity implements IFragmentCallbacks {
                 finish();
             }
         }
-
     }
 
     @Override

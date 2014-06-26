@@ -25,6 +25,8 @@ import java.util.regex.Pattern;
  * Created by jose on 5/13/14.
  */
 public class TrafficTicket implements Parcelable {
+    public enum TicketType { IDENTIFICADO, EMPADRONADO }
+
     public static final String TICKET_KEY = "TICKET_KEY";
 
     private static final String LICENSE_PLATE_REGEX = "^[a-z]{2}[0-9]{2}[0-9]{2}|" +
@@ -49,6 +51,8 @@ public class TrafficTicket implements Parcelable {
     private String mVehicle;
     private String mLicensePlate;
     private String mEmail;
+    private String mUuid;
+    private TicketType mType;
 
     @Nullable private String mDescription;
     private String mLocation;
@@ -77,9 +81,9 @@ public class TrafficTicket implements Parcelable {
     @Nullable
     public static TrafficTicket getPendingTicket(Database db) {
         SQLiteDatabase database = db.getDatabase();
-        Cursor cursor = database.query("ticket", null, "upload_state = ? OR upload_state = ?",
-                new String[] {"" + Uploader.UploadState.PENDING.ordinal(), "" + Uploader.UploadState.UPLOADING.ordinal() },
-                null, null, "upload_state DESC", "1");
+        Cursor cursor = database.query("ticket", null, String.format("upload_state = %d OR upload_state = %d",
+                Uploader.UploadState.PENDING.ordinal(), Uploader.UploadState.UPLOADING.ordinal()),
+                null, null, null, "upload_state DESC", "1");
         TrafficTicket ticket = null;
         if(cursor.moveToFirst()) {
             ticket = new TrafficTicket(cursor);
@@ -102,7 +106,8 @@ public class TrafficTicket implements Parcelable {
 
             @Override
             public boolean validate(TrafficTicket ticket) {
-                return ticket.mFirstName != null && ticket.mFirstName.length() > 0;
+                return ticket.mType == TicketType.EMPADRONADO ||
+                        (ticket.mFirstName != null && ticket.mFirstName.length() > 0);
             }
         });
 
@@ -114,7 +119,8 @@ public class TrafficTicket implements Parcelable {
 
             @Override
             public boolean validate(TrafficTicket ticket) {
-                return ticket.mLastName != null && ticket.mLastName.length() > 0;
+                return ticket.mType == TicketType.EMPADRONADO ||
+                        (ticket.mLastName != null && ticket.mLastName.length() > 0);
             }
         });
 
@@ -143,7 +149,7 @@ public class TrafficTicket implements Parcelable {
 
             @Override
             public boolean validate(TrafficTicket ticket) {
-                return ticket.mRut != null;
+                return ticket.mType == TicketType.EMPADRONADO ||  ticket.mRut != null;
             }
         });
 
@@ -155,7 +161,8 @@ public class TrafficTicket implements Parcelable {
 
             @Override
             public boolean validate(TrafficTicket ticket) {
-                return ticket.mAddress != null && ticket.mAddress.length() > 0;
+                return ticket.mType == TicketType.EMPADRONADO ||
+                        (ticket.mAddress != null && ticket.mAddress.length() > 0);
             }
         });
 
@@ -221,6 +228,8 @@ public class TrafficTicket implements Parcelable {
         mUserId = user.getId();
         mDate = new Date().getTime();
         mState = Uploader.UploadState.PENDING;
+        mUuid = UUID.randomUUID().toString();
+        mType = TicketType.IDENTIFICADO;
 
         mViolations = new ArrayList<TrafficViolation>();
         mPictures = new ArrayList<Picture>();
@@ -265,6 +274,8 @@ public class TrafficTicket implements Parcelable {
         mDescription = in.readString();
         mLocation = in.readString();
         mEmail = in.readString();
+        mUuid = in.readString();
+        mType = TicketType.values()[in.readInt()];
 
         mState = Uploader.UploadState.values()[in.readInt()];
         mZipPath = in.readString();
@@ -291,6 +302,8 @@ public class TrafficTicket implements Parcelable {
         mDescription = cursor.getString(cursor.getColumnIndex("description"));
         mLocation = cursor.getString(cursor.getColumnIndex("location"));
         mEmail = cursor.getString(cursor.getColumnIndex("email"));
+        mUuid = cursor.getString(cursor.getColumnIndex("uuid"));
+        mType = TicketType.values()[cursor.getInt(cursor.getColumnIndex("type"))];
 
         mState = Uploader.UploadState.values()[cursor.getInt(cursor.getColumnIndex("upload_state"))];
         mZipPath = cursor.getString(cursor.getColumnIndex("zip_path"));
@@ -304,6 +317,11 @@ public class TrafficTicket implements Parcelable {
             }
         }
         return null;
+    }
+
+    public User getUser(Database db) {
+        User user = User.getUser(db, mUserId);
+        return user;
     }
 
     public Integer getLicenseCode() {
@@ -386,6 +404,14 @@ public class TrafficTicket implements Parcelable {
         mEmail = email;
     }
 
+    public String getUuid() {
+        return mUuid;
+    }
+
+    public void setUuid(String uuid) {
+        mUuid = uuid;
+    }
+
     public String getLocation() {
         return mLocation;
     }
@@ -400,6 +426,21 @@ public class TrafficTicket implements Parcelable {
 
     public void setDescription(String description) {
         mDescription = description;
+    }
+
+    public TicketType getType() {
+        return mType;
+    }
+
+    public void setType(TicketType type) {
+        mType = type;
+        if (type == TicketType.EMPADRONADO) {
+            mRut = null;
+            mFirstName = null;
+            mLastName = null;
+            mAddress = null;
+            mEmail = null;
+        }
     }
 
     public List<Picture> getPictures() {
@@ -471,20 +512,21 @@ public class TrafficTicket implements Parcelable {
         Settings settings = Settings.getSettings();
         SQLiteDatabase database = settings.getDatabase().getDatabase();
 
-        database.update("ticket", getContentValues(), "_id = ?", new String[] { "" + mId });
+        database.update("ticket", getContentValues(), "_id = " + mId, null);
     }
 
 
     @JsonIgnore
     public String getPrinterStringSummary() {
-        // TODO: finish formatting string
+        Locale locale = new Locale("es", "ES");
+
         User user = User.getUser(Settings.getSettings().getDatabase(), mUserId);
         StringBuffer buffer = new StringBuffer();
 
         buffer.append("Datos del infractor:\n");
         buffer.append("Nombre: " + mFirstName + "\n");
         buffer.append("Appellido: " + mLastName + "\n");
-        buffer.append("Cédula de Identidad: " + mRut + "\n");
+        buffer.append("Cedula de Identidad: " + mRut + "\n");
         buffer.append("Domicilio: " + mAddress + "\n");
         if (mEmail != null && mEmail.length() > 0) {
             buffer.append("E-Mail: " + mEmail + "\n");
@@ -497,8 +539,8 @@ public class TrafficTicket implements Parcelable {
         calendar.add(Calendar.DAY_OF_YEAR, 3);
         Date timeOfCitation = calendar.getTime();
 
-        buffer.append(String.format("Citado a comparecer al %1$d juzgado de policía local de %2$s el día " +
-                "%3$td de %3$tB a las %3$tH:%3$tM bajo apercibimiento de proceder en su rebeldía.\n",
+        buffer.append(String.format(locale, "Citado a comparecer al %1$d juzgado de policia local de %2$s el dia " +
+                "%3$td de %3$tB a las %3$tH:%3$tM bajo apercibimiento de proceder en su rebeldia.\n",
                 user.getCourthouseNumber(), user.getCourthouseCity(), timeOfCitation));
         buffer.append("\n");
 
@@ -517,13 +559,16 @@ public class TrafficTicket implements Parcelable {
 
         buffer.append(String.format("Cometidas en: %1$s a las %2$tH:%2$tM\n\n", mLocation, new Date(mDate)));
 
-        buffer.append("Vehículo: " + mVehicle + "\n");
+        buffer.append("Vehiculo: " + mVehicle + "\n");
         buffer.append("Patente: " + mLicensePlate + "\n\n");
 
         buffer.append(String.format("Testigo: %s %s %s\n", user.getRank(), user.getFirstName(), user.getLastName()));
         buffer.append("Placa: " + user.getPlaque() + "\n\n");
 
-        buffer.append(String.format("Fecha: %1$td de %1$tB del %1$tY\n", new Date(mDate)));
+        buffer.append(String.format(locale, "Fecha: %1$td de %1$tB del %1$tY\n\n", new Date(mDate)));
+
+        buffer.append("Reciba un 20% de descuento pagando el parte a los cinco primeros dias de haber cometido la infraccion.\n\n" +
+                "Para mas informacion, ingrese a partes-electronicos.herokuapp.com.");
 
         return buffer.toString();
     }
@@ -546,12 +591,14 @@ public class TrafficTicket implements Parcelable {
         cv.put("email", mEmail);
         cv.put("upload_state", mState.ordinal());
         cv.put("zip_path", mZipPath);
+        cv.put("type", mType.ordinal());
         return cv;
     }
 
     public void dumpJsonToStream(OutputStream stream) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(stream, this);
+        //Log.i("Test", mapper.writeValueAsString(this));
     }
 
     // Parcelable interface
@@ -607,6 +654,8 @@ public class TrafficTicket implements Parcelable {
         out.writeString(mDescription);
         out.writeString(mLocation);
         out.writeString(mEmail);
+        out.writeString(mUuid);
+        out.writeInt(mType.ordinal());
 
         out.writeInt(mState.ordinal());
         out.writeString(mZipPath);

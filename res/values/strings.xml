@@ -31,6 +31,8 @@
     <string name="invalid_violation">Infracción Inválida!</string>
     <string name="select_violation">Seleccione una Infracción</string>
     <string name="email">E-Mail (opcional)</string>
+    <string name="ticket_identificado">Parte Identificado</string>
+    <string name="ticket_empadronado">Parte Empadronado</string>
 
     <string name="wrong_pin_error">PIN de base de datos inválido</string>
     <string name="upload_state_pending">Pendiente</string>

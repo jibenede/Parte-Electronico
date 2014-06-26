@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.puc.parte_electronico.R;
@@ -22,8 +23,6 @@ import org.jetbrains.annotations.Nullable;
  * Created by jose on 5/19/14.
  */
 public class TicketDetailsFragment extends Fragment implements ITicketFragment {
-
-
     public static final String TAG = "TICKET_DETAILS_FRAGMENT";
     private final int[] RUT_MULTIPLIER = new int[] { 2, 3, 4, 5, 6, 7 };
 
@@ -41,6 +40,8 @@ public class TicketDetailsFragment extends Fragment implements ITicketFragment {
     private EditText mEditLocation;
     private EditText mEditMail;
 
+    private TextView mLabelTicketType;
+    private ImageButton mSwitchButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -144,6 +145,19 @@ public class TicketDetailsFragment extends Fragment implements ITicketFragment {
             }
         });
 
+        mLabelTicketType = (TextView)view.findViewById(R.id.label_ticket_type);
+
+        mSwitchButton = (ImageButton)view.findViewById(R.id.button_switch_type);
+        if (!mEditable) {
+            mSwitchButton.setVisibility(View.INVISIBLE);
+        }
+        mSwitchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switchTicketType();
+            }
+        });
+
         initializeData();
 
         return view;
@@ -163,20 +177,56 @@ public class TicketDetailsFragment extends Fragment implements ITicketFragment {
     }
 
     private void initializeData() {
-        Integer rut = mTicket.getRut();
-        if (rut != null) {
-            mEditRut.setText("" + mTicket.getRut());
-            checkRut(mTicket.getRut());
+        if (mTicket.getType() == TrafficTicket.TicketType.IDENTIFICADO) {
+
+            Integer rut = mTicket.getRut();
+            if (rut != null) {
+                mEditRut.setText("" + mTicket.getRut());
+                checkRut(mTicket.getRut());
+            }
+
+            mEditFirstName.setText(mTicket.getFirstName());
+            mEditLastName.setText(mTicket.getLastName());
+            mEditAddress.setText(mTicket.getAddress());
+            mEditMail.setText(mTicket.getEmail());
+            mLabelTicketType.setText(getString(R.string.ticket_identificado));
+
+            if (mEditable) {
+                mEditRut.setEnabled(true);
+                mEditFirstName.setEnabled(true);
+                mEditLastName.setEnabled(true);
+                mEditAddress.setEnabled(true);
+                mEditMail.setEnabled(true);
+            }
+        } else {
+            mEditRut.setText("");
+            mEditRut.setEnabled(false);
+            mEditFirstName.setText("");
+            mEditFirstName.setEnabled(false);
+            mEditLastName.setText("");
+            mEditLastName.setEnabled(false);
+            mEditAddress.setText("");
+            mEditAddress.setEnabled(false);
+            mEditMail.setText("");
+            mEditMail.setEnabled(false);
+            mEditVerifierDigit.setText("");
+            mLabelTicketType.setText(getString(R.string.ticket_empadronado));
         }
 
-        mEditFirstName.setText(mTicket.getFirstName());
-        mEditLastName.setText(mTicket.getLastName());
-        mEditAddress.setText(mTicket.getAddress());
+
         mEditVehicle.setText(mTicket.getVehicle());
         mEditLicensePlate.setText(mTicket.getLicensePlate());
-        mEditMail.setText(mTicket.getEmail());
         mEditLocation.setText(mTicket.getLocation());
         mEditDescription.setText(mTicket.getDescription());
+    }
+
+    private void switchTicketType() {
+        if (mTicket.getType() == TrafficTicket.TicketType.IDENTIFICADO) {
+            mTicket.setType(TrafficTicket.TicketType.EMPADRONADO);
+        } else {
+            mTicket.setType(TrafficTicket.TicketType.IDENTIFICADO);
+        }
+        initializeData();
     }
 
     private void parseRut(TextView v) {

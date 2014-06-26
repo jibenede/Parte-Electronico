@@ -4,6 +4,10 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import com.puc.parte_electronico.R;
 import com.puc.parte_electronico.globals.Settings;
 import com.puc.parte_electronico.model.Database;
@@ -17,6 +21,8 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Date;
 import java.util.Random;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Ever running service that manages file fragmentation and upload towards a
@@ -50,7 +56,13 @@ public class Uploader extends IntentService {
     public static final int MINIMUM_BACKOFF_MS = 5 * 1000;
     public static int MAXIMUM_BACKOFF_MS = 1000 * 60 * 60;
 
-    private final static String DEFAULT_HOST = "http://middleware.frogmi.com";
+    private static final String DEFAULT_HOST = "http://partes-electronicos.herokuapp.com";
+    private static final String AMAZON_ACCESS_ID = "AKIAJV3UTPBB525PEMNA";
+    private static final String AMAZON_SECRET_KEY = "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";
+    private static final String AMAZON_BUCKET_NAME = "partes-electronicos";
+    private static final String AMAZON_USERNAME = "adminPartes";
+
+
 
     // Class attributes
 
@@ -102,7 +114,7 @@ public class Uploader extends IntentService {
         }
         connection.setDoOutput(true);
         connection.setFixedLengthStreamingMode(length);
-        connection.addRequestProperty("Content-Type", "application/zip");
+        connection.addRequestProperty("Content-Type", "application/json");
     }
 
     /**
@@ -115,15 +127,50 @@ public class Uploader extends IntentService {
         try {
             long startTime = System.currentTimeMillis();
 
-            URL url = new URL(DEFAULT_HOST);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            configureConnection(connection, file.length());
+            ByteArrayOutputStream jsonBaos = new ByteArrayOutputStream();
 
             FileInputStream fis = new FileInputStream(file);
+            ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
+            ZipEntry ze;
+            while ((ze = zis.getNextEntry()) != null) {
+                boolean isJson = ze.getName().indexOf(".json") != -1;
+                long length = 0;
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                byte[] buffer = new byte[1024];
+                int count;
+                while ((count = zis.read(buffer)) != -1) {
+                    length += count;
+                    if (isJson) {
+                        jsonBaos.write(buffer, 0, count);
+                    } else {
+                        baos.write(buffer, 0, count);
+                    }
+                }
+                baos.close();
+
+                if (!isJson) {
+                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+
+                    AmazonS3Client s3Client = new AmazonS3Client(new BasicAWSCredentials(
+                            AMAZON_ACCESS_ID, AMAZON_SECRET_KEY));
+                    PutObjectResult result = s3Client.putObject(AMAZON_BUCKET_NAME, ze.getName(), bais, getMetaData(length));
+                }
+            }
+            jsonBaos.close();
+
+            String accessToken = mCurrentTicket.getUser(Settings.getSettings().getDatabase()).getAccessToken();
+
+            URL url = new URL(DEFAULT_HOST + "/api/new_ticket/" + accessToken);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            configureConnection(connection, jsonBaos.size());
+
             Log.i("Uploader", "Write started");
 
+            String body = new String(jsonBaos.toByteArray());
+            ByteArrayInputStream jsonBais = new ByteArrayInputStream(jsonBaos.toByteArray());
             OutputStream os = connection.getOutputStream();
-            int bytesSent = writeStream(fis, os);
+            int bytesSent = writeStream(jsonBais, os);
             os.close();
 
             int responseCode = connection.getResponseCode();
@@ -136,6 +183,7 @@ public class Uploader extends IntentService {
                 is = connection.getInputStream();
             }
             byte[] response = readStream(is);
+            String responseBody = new String(response);
             is.close();
 
             fis.close();
@@ -149,6 +197,17 @@ public class Uploader extends IntentService {
         }
     }
 
+    private ObjectMetadata getMetaData(long length) {
+        // MetaData necesaria para mandarle al objeto en S3 que se creará.
+
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType("application/jpg");
+        metadata.setContentLength(length);
+
+
+        return metadata;
+    }
+
     /**
      * Broadcasts an intent indicating the file has been completely uploaded
      * and deletes the file from the database and filesystem.
@@ -159,7 +218,6 @@ public class Uploader extends IntentService {
         mCurrentTicket.update();
 
     }
-
 
     /**
      * Pauses the thread execution for an exponential amount of time
@@ -188,13 +246,13 @@ public class Uploader extends IntentService {
     }
 
 
-    private int writeStream(FileInputStream fis, OutputStream output)
+    private int writeStream(InputStream is, OutputStream output)
             throws IOException {
         OutputStream os = new BufferedOutputStream(output);
         int bytesSent = 0;
         byte[] buffer = new byte[1024];
         int length;
-        while ((length = fis.read(buffer)) != -1) {
+        while ((length = is.read(buffer)) != -1) {
             os.write(buffer, 0, length);
         }
         os.flush();

@@ -16,13 +16,15 @@
             android:value="AIzaSyCLYMm71ZdQ7aNNQjnhMn4UaaMgF0JXBlA"/>
 
         <activity
-                android:name="com.puc.parte_electronico.MainActivity"
-                android:label="@string/app_name">
+                android:name="com.puc.parte_electronico.SplashActivity"
+                android:label="@string/app_name"
+                android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity android:name="com.puc.parte_electronico.MainActivity" />
         <activity android:name="com.puc.parte_electronico.NavigationActivity" />
         <activity android:name="com.puc.parte_electronico.TicketActivity"/>
         <activity android:name="com.puc.parte_electronico.SummaryActivity" />

@@ -31,6 +31,8 @@
     <string name="invalid_violation">Invalid Traffic Violation!</string>
     <string name="select_violation">Select a Traffic Violation</string>
     <string name="email">E-Mail (Optional)</string>
+    <string name="ticket_identificado">Identified Ticket</string>
+    <string name="ticket_empadronado">Registrant Ticket</string>
 
     <string name="wrong_pin_error">Invalid database PIN</string>
     <string name="upload_state_pending">Pending</string>

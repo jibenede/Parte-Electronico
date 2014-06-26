@@ -34,6 +34,8 @@ public class User {
     private String mPlaque;
     @JsonProperty("rank")
     private String mRank;
+    @JsonProperty("access_token")
+    private String mAccessToken;
 
     public User() {}
 
@@ -54,6 +56,7 @@ public class User {
         mCourthouseCity = cursor.getString(cursor.getColumnIndex("courthouse_city"));
         mPlaque = cursor.getString(cursor.getColumnIndex("plaque"));
         mRank = cursor.getString(cursor.getColumnIndex("rank"));
+        mAccessToken = cursor.getString(cursor.getColumnIndex("access_token"));
     }
 
     public ContentValues getContentValues() {
@@ -67,6 +70,7 @@ public class User {
         cv.put("courthouse_city", mCourthouseCity);
         cv.put("plaque", mPlaque);
         cv.put("rank", mRank);
+        cv.put("access_token", mAccessToken);
         return cv;
     }
 
@@ -152,6 +156,14 @@ public class User {
 
     public void setRank(String rank) {
         mRank = rank;
+    }
+
+    public String getAccessToken() {
+        return mAccessToken;
+    }
+
+    public void setAccessToken(String accessToken) {
+        mAccessToken = accessToken;
     }
 
     public void insert(Database database) {

@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import com.puc.parte_electronico.uploader.Uploader;
 
 /**
  * Created by jose on 5/13/14.
@@ -28,10 +29,10 @@ public class NavigationActivity extends Activity {
         super.onResume();
 
         // TODO: uncomment when server becomes available
-        /*
+
         Intent intent = Uploader.getIntent(this);
         startService(intent);
-        */
+
     }
 
     @Override

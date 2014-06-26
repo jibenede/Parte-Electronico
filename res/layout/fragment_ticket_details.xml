@@ -14,6 +14,31 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="@string/ticket_identificado"
+                    android:id="@+id/label_ticket_type"
+                    android:textColor="@color/hint_color"
+                    android:layout_alignParentLeft="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="10dp"/>
+
+                <ImageButton
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/switch_icon"
+                    android:id="@+id/button_switch_type"
+                    android:scaleType="fitCenter"
+                    android:layout_alignParentRight="true"/>
+            </RelativeLayout>
+
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
@@ -37,7 +62,8 @@
                     android:text="-"
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"
-                    android:id="@+id/textView" />
+                    android:id="@+id/textView"
+                    android:textColor="@color/hint_color"/>
 
                 <EditText
                     android:layout_width="40dp"
@@ -131,7 +157,7 @@
                 android:gravity="top"
                 android:textColorHint="@color/hint_color"/>
 
-            </LinearLayout>
+        </LinearLayout>
 
         </ScrollView>
 

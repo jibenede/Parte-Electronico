@@ -1,8 +1,6 @@
 package com.puc.parte_electronico.model;
 
-import android.content.ContentValues;
 import android.content.Context;
-import com.puc.parte_electronico.globals.CryptoUtilities;
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteException;
 
@@ -56,27 +54,14 @@ public class Database {
         mDatabase.execSQL("create table ticket (_id INTEGER PRIMARY KEY, " +
                 "user_id REFERENCES user(_id) ON DELETE RESTRICT, license_code, date NOT NULL, latitude, longitude, " +
                 "rut, first_name, last_name, address, vehicle, license_plate, email, location, description, " +
-                "upload_state, zip_path);");
+                "upload_state, zip_path, uuid, type);");
         mDatabase.execSQL("create table violation (_id INTEGER PRIMARY KEY, " +
                 "ticket_id REFERENCES ticket(_id) ON DELETE CASCADE, type, cost);");
         mDatabase.execSQL("create table picture (_id INTEGER PRIMARY KEY, " +
                 "ticket_id REFERENCES ticket(_id) ON DELETE CASCADE, path, type);");
         mDatabase.execSQL("create table user (_id INTEGER PRIMARY KEY, username, password, first_name, last_name, " +
-                "precinct, courthouse_number, courthouse_city, plaque, rank);");
+                "precinct, courthouse_number, courthouse_city, plaque, rank, access_token);");
         mDatabase.execSQL("create table parameter(_id INTEGER PRIMARY KEY, key, value);");
-
-        // TODO: default user for testing purposes only, delete on final release
-        ContentValues cv = new ContentValues();
-        cv.put("username", "admin");
-        cv.put("password", CryptoUtilities.hash("1234"));
-        cv.put("first_name", "Juan");
-        cv.put("last_name", "Perez");
-        cv.put("precinct", "1a Comisaría");
-        cv.put("courthouse_number", 1);
-        cv.put("courthouse_city", "Santiago");
-        cv.put("plaque", "123456-K");
-        cv.put("rank", "Sargento");
-        mDatabase.insert("user", null, cv);
 
         mDatabase.setTransactionSuccessful();
         mDatabase.endTransaction();
