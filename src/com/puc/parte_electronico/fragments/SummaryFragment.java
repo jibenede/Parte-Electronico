@@ -152,6 +152,7 @@ public class SummaryFragment extends Fragment {
         super.onStart();
         if (mMapEnabled) {
             configureMap(mMapFragment, mTicket.getLatitude(), mTicket.getLongitude());
+            
         }
     }
 
